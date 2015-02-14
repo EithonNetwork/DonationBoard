@@ -1,20 +1,19 @@
 package se.fredsfursten.donationboardplugin;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.util.Vector;
-
-import se.fredsfursten.plugintools.PlayerInfo;
 
 public class DonationBoard {
 	private static DonationBoard singleton = null;
 
+	public static int TOTAL_DAYS = 3;
+	public static int TOTAL_LEVELS = 3;
+	
 	private DonationInfo[][] _donations;
 	private Block _startBlock;
 	int _stepX;
@@ -22,9 +21,9 @@ public class DonationBoard {
 	private JavaPlugin plugin = null;
 
 	private DonationBoard() {
-		this._donations = new DonationInfo[31][5];
-		for (int day = 0; day < 31; day++) {
-			for (int level = 0; level < 5; level++) {
+		this._donations = new DonationInfo[TOTAL_DAYS][TOTAL_LEVELS];
+		for (int day = 0; day < TOTAL_DAYS; day++) {
+			for (int level = 0; level < TOTAL_LEVELS; level++) {
 				this._donations[day][level] = null;
 			}
 		}
@@ -73,7 +72,7 @@ public class DonationBoard {
 		int x = blockX;
 		int z = blockZ;
 		player.sendMessage(String.format("Start x,z %d, %d", x, z));
-		for (int day = 0; day < 31; day++) {
+		for (int day = 0; day < TOTAL_DAYS; day++) {
 			Block nextBlock = clickedBlock.getWorld().getBlockAt(x, blockY, z);
 			createDonationButton(nextBlock);
 			x = x + this._stepX;
@@ -92,28 +91,42 @@ public class DonationBoard {
 
 	@SuppressWarnings("deprecation")
 	void createPlayerSkull(Player player, Block block) {
+		if (!isBlockInsideBoard(block)) return;
 		block.setType(Material.SKULL);
-		block.setData((byte) 2);
+		block.setData((byte) 4);
 		Skull skull = (Skull)block.getState();
 		skull.setOwner(player.getName());
 		skull.update();
 	}
 	
 	void createDonationButton(Block block) {
+		if (!isBlockInsideBoard(block)) return;
 		block.setType(Material.WOOD_BUTTON);
 		block.setData((byte) 2);
 	}
+	
+	private boolean isBlockInsideBoard(Block block) {
+		int day = calculateDay(block);
+		int level = calculateLevel(block);
+		if (day < 0) return false;
+		if (day >= TOTAL_DAYS) return false;
+		if (level < 0) return false;
+		if (level >= TOTAL_LEVELS) return false;
+		return true;
+	}
 
 	private void markAsPossibleToDonate(Block block) {
+		if (!isBlockInsideBoard(block)) return;
 		int day = calculateDay(block);
 		int level = calculateLevel(block);
 		_donations[day][level] = new DonationInfo(false, null);
-		for (int i = level+1; i < 5; i++) {
+		for (int i = level+1; i < TOTAL_LEVELS; i++) {
 			_donations[day][i] = new DonationInfo(true, null);
 		}
 	}
 
 	private void markAsDonated(Block block, Player player) {
+		if (!isBlockInsideBoard(block)) return;
 		int day = calculateDay(block);
 		int level = calculateLevel(block);
 		this._donations[day][level] = new DonationInfo(false, player);
