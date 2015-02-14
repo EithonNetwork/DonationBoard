@@ -14,25 +14,42 @@ class DonationInfo {
 	private UUID creatorId;
 	private String creatorName;
 
-	DonationInfo(boolean isEmpty, Player creator)
+	public DonationInfo(Player creator)
 	{
-		if (creator != null)
-		{
-			this.creatorId = creator.getUniqueId();
-			this.creatorName = creator.getName();
-			this.donationType = DonationType.DONATION;
-		} else {
-			this.creatorId = null;
-			this.creatorName = null;
-			this.donationType = isEmpty? DonationType.NONE:DonationType.BUTTON;
-		}
+		this.donationType = DonationType.DONATION;
+		this.creatorId = creator.getUniqueId();
+		this.creatorName = creator.getName();
+
+	}
+
+	public DonationInfo(boolean isEmpty)
+	{
+		this.donationType = isEmpty? DonationType.NONE:DonationType.BUTTON;
+		this.creatorId = null;
+		this.creatorName = null;
 	}
 
 	public static DonationInfo createDonationBoardInfo(StorageModel storageModel)
 	{
-		return new DonationInfo(storageModel.getIsEmpty(), storageModel.getCreator());
+		Player player = storageModel.getCreator();
+		if (player == null) {
+			return new DonationInfo(storageModel.getIsEmpty());
+		}
+		return new DonationInfo(storageModel.getCreator());
 	}
-	
+
+	boolean isEmpty() {
+		return this.donationType == DonationType.NONE;
+	}
+
+	boolean isButton() {
+		return this.donationType == DonationType.BUTTON;
+	}
+
+	boolean isDonation() {
+		return this.donationType == DonationType.DONATION;
+	}
+
 	Player getCreator()
 	{
 		return Bukkit.getServer().getPlayer(this.creatorId);

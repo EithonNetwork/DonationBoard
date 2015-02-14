@@ -6,32 +6,14 @@ description: A Minecraft plugin for keeping scores of donations on a donation bo
 commands:
   donationboard:
     description: Control the donation board
-    usage: /donationboard add| remove | edit | goto | list 
+    usage: /donationboard shift
     permission-message: You don't have <permission>
 permissions:
   donationboard.*:
     description: Gives access to all donationboard commands
     default: op
-    donationboard.add: true
-    donationboard.remove: true
-    donationboard.edit: true
-    donationboard.list: true
-    donationboard.goto: true
-  donationboard.add:
-    description: Access to /donationboard add command
+    donationboard.shift: true
+  donationboard.shift:
+    description: Access to /donationboard shift command
     default: op
-  donationboard.remove:
-    description: Access to /donationboard remove command
-    default: op
-  donationboard.edit:
-    description: Access to /donationboard edit command
-    default: op
-  donationboard.list:
-    description: Access to /donationboard list command
-    default: op
-  donationboard.goto:
-    description: Access to /donationboard goto command
-    default: op
-  donationboard.jump:
-    description: Can jump from a donationboard
-    default: op
+

@@ -13,7 +13,7 @@ public class DonationBoard {
 
 	public static int TOTAL_DAYS = 3;
 	public static int TOTAL_LEVELS = 3;
-	
+
 	private DonationInfo[][] _donations;
 	private Block _startBlock;
 	int _stepX;
@@ -52,7 +52,7 @@ public class DonationBoard {
 			}
 		});
 	}
-	
+
 	public void initialize(Player player, Block clickedBlock) {
 		this._startBlock = clickedBlock;
 		this._stepX = 0;
@@ -73,14 +73,15 @@ public class DonationBoard {
 		int z = blockZ;
 		player.sendMessage(String.format("Start x,z %d, %d", x, z));
 		for (int day = 0; day < TOTAL_DAYS; day++) {
-			Block nextBlock = clickedBlock.getWorld().getBlockAt(x, blockY, z);
-			createDonationButton(nextBlock);
+			Block block = clickedBlock.getWorld().getBlockAt(x, blockY, z);
+			createDonationButton(block);
+			markAsPossibleToDonate(block);
 			x = x + this._stepX;
 			z = z + this._stepZ;
 		}
 		player.sendMessage(String.format("Stop x,z %d, %d", x-this._stepX, z-this._stepZ));
 	}
-	
+
 	void rememberNewDonation(Block block, Player player) {
 		createPlayerSkull(player, block);
 		markAsDonated(block, player);
@@ -89,8 +90,32 @@ public class DonationBoard {
 		markAsPossibleToDonate(block);
 	}
 
+	public void shiftLeft() {
+		for (int day = 0; day < TOTAL_DAYS-1; day++) {
+			for (int level = 0; level < TOTAL_LEVELS; level++) {
+				Block block = calculateBlock(day, level);
+				this._donations[day][level] = this._donations[day+1][level];
+				DonationInfo donation = this._donations[day][level];
+				if (donation.isEmpty()) {
+					setEmpty(block);
+				} else if (donation.isButton()) {
+					createDonationButton(block);
+				} else {
+					createPlayerSkull(donation.getCreator(), block);
+				}
+			}
+		}			
+		int day = TOTAL_DAYS-1;
+		for (int level = 0; level < TOTAL_LEVELS; level++) {
+			Block block = calculateBlock(day, level);
+			this._donations[day][level] = new DonationInfo(level > 0);
+			if (level > 0) setEmpty(block);
+			else createDonationButton(block);
+		}
+	}
+
 	@SuppressWarnings("deprecation")
-	void createPlayerSkull(Player player, Block block) {
+	private void createPlayerSkull(Player player, Block block) {
 		if (!isBlockInsideBoard(block)) return;
 		block.setType(Material.SKULL);
 		block.setData((byte) 4);
@@ -98,13 +123,19 @@ public class DonationBoard {
 		skull.setOwner(player.getName());
 		skull.update();
 	}
-	
-	void createDonationButton(Block block) {
+
+	@SuppressWarnings("deprecation")
+	private void createDonationButton(Block block) {
 		if (!isBlockInsideBoard(block)) return;
 		block.setType(Material.WOOD_BUTTON);
 		block.setData((byte) 2);
 	}
-	
+
+	private void setEmpty(Block block) {
+		if (!isBlockInsideBoard(block)) return;
+		block.setType(Material.AIR);
+	}
+
 	private boolean isBlockInsideBoard(Block block) {
 		int day = calculateDay(block);
 		int level = calculateLevel(block);
@@ -119,9 +150,9 @@ public class DonationBoard {
 		if (!isBlockInsideBoard(block)) return;
 		int day = calculateDay(block);
 		int level = calculateLevel(block);
-		_donations[day][level] = new DonationInfo(false, null);
+		this._donations[day][level] = new DonationInfo(false);
 		for (int i = level+1; i < TOTAL_LEVELS; i++) {
-			_donations[day][i] = new DonationInfo(true, null);
+			this._donations[day][i] = new DonationInfo(true);
 		}
 	}
 
@@ -129,9 +160,9 @@ public class DonationBoard {
 		if (!isBlockInsideBoard(block)) return;
 		int day = calculateDay(block);
 		int level = calculateLevel(block);
-		this._donations[day][level] = new DonationInfo(false, player);
+		this._donations[day][level] = new DonationInfo(player);
 	}
-	
+
 	private int calculateDay(Block block) {
 		if (this._stepX != 0) {
 			return Math.abs(block.getX() - this._startBlock.getX());
@@ -139,8 +170,17 @@ public class DonationBoard {
 			return Math.abs(block.getZ() - this._startBlock.getZ());
 		}
 	}
-	
+
 	private int calculateLevel(Block block) {
 		return (block.getY() - this._startBlock.getY());
+	}
+	
+	private Block calculateBlock(int day, int level) {
+		Block block = this._startBlock.getWorld().getBlockAt(
+				this._startBlock.getX()+this._stepX*day, 
+				this._startBlock.getY()+level, 
+				this._startBlock.getZ()+this._stepZ*day);
+		if (!isBlockInsideBoard(block)) return null;
+		return block;
 	}
 }
