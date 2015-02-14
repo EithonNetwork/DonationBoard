@@ -12,36 +12,20 @@ import org.bukkit.util.Vector;
 
 class StorageModel implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private double blockX;
-	private double blockY;
-	private double blockZ;
-	private UUID worldId;
+	private boolean isEmpty;
 	private UUID creatorId;
 	private String creatorName;
 	
-	public StorageModel(Block block, UUID creatorId, String creatorName)
+	public StorageModel(boolean isEmpty, UUID creatorId, String creatorName)
 	{
-		this.blockX =block.getX();
-		this.blockY = block.getY();
-		this.blockZ = block.getZ();
-		this.worldId = block.getWorld().getUID();
+		this.isEmpty = isEmpty;
 		this.creatorId = creatorId;
 		this.creatorName = creatorName;
 	}
 	
-	public World getWorld()
+	public boolean getIsEmpty()
 	{
-		return Bukkit.getServer().getWorld(this.worldId);
-	}
-	
-	public Block getBlock()
-	{
-		return getLocation().getBlock();
-	}
-	
-	public Location getLocation()
-	{
-		return new Location(getWorld(), this.blockX, this.blockY, this.blockZ);
+		return this.isEmpty;
 	}
 	
 	public Player getCreator()

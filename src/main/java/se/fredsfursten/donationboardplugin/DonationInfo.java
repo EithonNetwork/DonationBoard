@@ -9,32 +9,30 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 class DonationInfo {
-	private Block block;
+	private enum DonationType {NONE, BUTTON, DONATION};
+	private DonationType donationType;
 	private UUID creatorId;
 	private String creatorName;
 
-	DonationInfo(Block block, Player creator)
+	DonationInfo(boolean isEmpty, Player creator)
 	{
-		this.block = block;
 		if (creator != null)
 		{
 			this.creatorId = creator.getUniqueId();
 			this.creatorName = creator.getName();
+			this.donationType = DonationType.DONATION;
 		} else {
 			this.creatorId = null;
 			this.creatorName = null;
+			this.donationType = isEmpty? DonationType.NONE:DonationType.BUTTON;
 		}
 	}
 
 	public static DonationInfo createDonationBoardInfo(StorageModel storageModel)
 	{
-		return new DonationInfo(storageModel.getBlock(), storageModel.getCreator());
+		return new DonationInfo(storageModel.getIsEmpty(), storageModel.getCreator());
 	}
 	
-	Block getBlock() {
-		return this.block;
-	}
-
 	Player getCreator()
 	{
 		return Bukkit.getServer().getPlayer(this.creatorId);
@@ -49,10 +47,10 @@ class DonationInfo {
 	}
 
 	StorageModel getStorageModel() {
-		return new StorageModel(getBlock(), getCreatorId(), getCreatorName());
+		return new StorageModel(this.donationType == DonationType.NONE, getCreatorId(), getCreatorName());
 	}
 
 	public String toString() {
-		return String.format("%s: block %s", getCreatorName(), getBlock().toString());
+		return String.format("%s: block %s", getCreatorName());
 	}
 }
