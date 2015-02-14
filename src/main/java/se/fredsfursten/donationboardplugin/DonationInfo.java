@@ -29,7 +29,7 @@ class DonationInfo {
 		this.creatorName = null;
 	}
 
-	public static DonationInfo createDonationBoardInfo(StorageModel storageModel)
+	public static DonationInfo createDonationBoardInfo(DonationModel storageModel)
 	{
 		Player player = storageModel.getCreator();
 		if (player == null) {
@@ -61,10 +61,6 @@ class DonationInfo {
 
 	UUID getCreatorId() {
 		return this.creatorId;
-	}
-
-	StorageModel getStorageModel() {
-		return new StorageModel(this.donationType == DonationType.NONE, getCreatorId(), getCreatorName());
 	}
 
 	public String toString() {

@@ -1,5 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
+import java.util.ArrayList;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -8,11 +10,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import se.fredsfursten.donationboardplugin.SavingAndLoadingBinary;
+
 public class DonationBoard {
 	private static DonationBoard singleton = null;
 
-	public static int TOTAL_DAYS = 3;
-	public static int TOTAL_LEVELS = 3;
+	public static final int TOTAL_DAYS = 3;
+	public static final int TOTAL_LEVELS = 3;
+	private static final String FILE_PATH = "plugins/DonationBoard/donations.bin";
 
 	private DonationInfo[][] _donations;
 	private Block _startBlock;
@@ -60,12 +65,12 @@ public class DonationBoard {
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.scheduleSyncDelayedTask(this.plugin, new Runnable() {
 			public void run() {
-				firstLineOfButtons(player, clickedBlock);
+				firstLineOfButtons(clickedBlock);
 			}
 		});
 	}
 
-	void firstLineOfButtons(Player player, Block clickedBlock) {
+	void firstLineOfButtons(Block clickedBlock) {
 		int blockX = clickedBlock.getX();
 		int blockY = clickedBlock.getY();
 		int blockZ = clickedBlock.getZ();
@@ -181,5 +186,48 @@ public class DonationBoard {
 				this._startBlock.getZ()+this._stepZ*day);
 		if (!isBlockInsideBoard(block)) return null;
 		return block;
+	}
+	
+	public void save(Player player)
+	{
+		BoardModel boardModel = new BoardModel(this._startBlock, this._stepX, this._stepZ, this._donations);
+		try {
+			SavingAndLoadingBinary.save(boardModel, FILE_PATH);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void load(Player player)
+	{
+		BoardModel boardModel;
+		try {
+			boardModel = SavingAndLoadingBinary.load(FILE_PATH);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		this._startBlock = boardModel.getBlock();
+		this._stepX = boardModel.getStepX();
+		this._stepZ = boardModel.getStepZ();
+		firstLineOfButtons(this._startBlock);
+		for (DonationModel model : boardModel.getDonations()) {
+			int day = model.getDay();
+			int level = model.getLevel();
+			Block block = calculateBlock(day, level);
+			if (model.getIsEmpty())
+			{
+				this._donations[day][level] = new DonationInfo(true);
+				setEmpty(block);
+			} else if (model.getCreator() == null) {
+				this._donations[day][level] = new DonationInfo(false);
+				createDonationButton(block);
+			} else {
+				this._donations[day][level] = new DonationInfo(model.getCreator());
+				createPlayerSkull(model.getCreator(), block);
+			}
+		}
 	}
 }

@@ -13,6 +13,8 @@ import se.fredsfursten.plugintools.Misc;
 public class Commands {
 	private static Commands singleton = null;
 	private static final String SHIFT_COMMAND = "/donationboard shift";
+	private static final String SAVE_COMMAND = "/donationboard save";
+	private static final String LOAD_COMMAND = "/donationboard load";
 
 	private JavaPlugin plugin = null;
 	
@@ -43,6 +45,28 @@ public class Commands {
 		}
 
 		DonationBoard.get().shiftLeft(player);
+	}
+
+	void saveCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.save")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(SAVE_COMMAND);
+			return;
+		}
+
+		DonationBoard.get().save(player);
+	}
+
+	void loadCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.load")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(LOAD_COMMAND);
+			return;
+		}
+
+		DonationBoard.get().load(player);
 	}
 
 

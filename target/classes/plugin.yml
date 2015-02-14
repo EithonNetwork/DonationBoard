@@ -13,7 +13,14 @@ permissions:
     description: Gives access to all donationboard commands
     default: op
     donationboard.shift: true
+    donationboard.save: true
+    donationboard.load: true
   donationboard.shift:
     description: Access to /donationboard shift command
     default: op
-
+  donationboard.save:
+    description: Access to /donationboard save command
+    default: op
+  donationboard.load:
+    description: Access to /donationboard load command
+    default: op

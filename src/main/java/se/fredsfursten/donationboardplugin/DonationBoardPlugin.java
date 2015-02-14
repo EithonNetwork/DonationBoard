@@ -61,6 +61,10 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		String command = args[0].toLowerCase();
 		if (command.equals("shift")) {
 			Commands.get().shiftCommand(player, args);
+		} else if (command.equals("save")) {
+			Commands.get().saveCommand(player, args);
+		} else if (command.equals("load")) {
+			Commands.get().loadCommand(player, args);
 		} else {
 			sender.sendMessage("Could not understand command.");
 			return false;
