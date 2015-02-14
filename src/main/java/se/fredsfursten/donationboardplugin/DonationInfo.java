@@ -68,6 +68,6 @@ class DonationInfo {
 	}
 
 	public String toString() {
-		return String.format("%s: block %s", getCreatorName());
+		return String.format("%s: %s", this.donationType.toString(), getCreatorName());
 	}
 }

@@ -28,20 +28,14 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		player.sendMessage("Interact event");
 		//if(!player.getWorld().getName().equalsIgnoreCase("w_donationworld")) return;
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-		player.sendMessage("RIGHT_CLICK_BLOCK");
 		switch (event.getClickedBlock().getType()) {
 		case STONE_BUTTON:
-			player.sendMessage("STONE_BUTTON");
 			DonationBoard.get().initialize(player, event.getClickedBlock());
-			player.sendMessage("Initialize done.");
 			break;
 		case WOOD_BUTTON:
-			player.sendMessage("WOOD_BUTTON");
 			DonationBoard.get().donate(player, event.getClickedBlock());
-			player.sendMessage("Donate done.");
 			break;
 
 		default:

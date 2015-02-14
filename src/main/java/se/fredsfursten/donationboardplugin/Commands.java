@@ -42,7 +42,7 @@ public class Commands {
 			return;
 		}
 
-		DonationBoard.get().shiftLeft();
+		DonationBoard.get().shiftLeft(player);
 	}
 
 

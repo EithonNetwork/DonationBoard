@@ -71,7 +71,6 @@ public class DonationBoard {
 		int blockZ = clickedBlock.getZ();
 		int x = blockX;
 		int z = blockZ;
-		player.sendMessage(String.format("Start x,z %d, %d", x, z));
 		for (int day = 0; day < TOTAL_DAYS; day++) {
 			Block block = clickedBlock.getWorld().getBlockAt(x, blockY, z);
 			createDonationButton(block);
@@ -79,23 +78,15 @@ public class DonationBoard {
 			x = x + this._stepX;
 			z = z + this._stepZ;
 		}
-		player.sendMessage(String.format("Stop x,z %d, %d", x-this._stepX, z-this._stepZ));
 	}
 
-	void rememberNewDonation(Block block, Player player) {
-		createPlayerSkull(player, block);
-		markAsDonated(block, player);
-		Block blockAbove = block.getWorld().getBlockAt(block.getX(), block.getY()+1, block.getZ());
-		createDonationButton(blockAbove);
-		markAsPossibleToDonate(block);
-	}
-
-	public void shiftLeft() {
+	public void shiftLeft(Player player) {
 		for (int day = 0; day < TOTAL_DAYS-1; day++) {
 			for (int level = 0; level < TOTAL_LEVELS; level++) {
 				Block block = calculateBlock(day, level);
-				this._donations[day][level] = this._donations[day+1][level];
-				DonationInfo donation = this._donations[day][level];
+				DonationInfo donation = this._donations[day+1][level];
+				this._donations[day][level] = donation;
+				player.sendMessage(String.format("%d,%d: %s", day, level, donation.toString()));
 				if (donation.isEmpty()) {
 					setEmpty(block);
 				} else if (donation.isButton()) {
@@ -112,6 +103,14 @@ public class DonationBoard {
 			if (level > 0) setEmpty(block);
 			else createDonationButton(block);
 		}
+	}
+
+	void rememberNewDonation(Block block, Player player) {
+		createPlayerSkull(player, block);
+		markAsDonated(block, player);
+		Block blockAbove = block.getWorld().getBlockAt(block.getX(), block.getY()+1, block.getZ());
+		createDonationButton(blockAbove);
+		markAsPossibleToDonate(blockAbove);
 	}
 
 	@SuppressWarnings("deprecation")
