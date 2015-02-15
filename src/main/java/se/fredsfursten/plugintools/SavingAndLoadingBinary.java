@@ -7,16 +7,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class SavingAndLoadingBinary {
-	public static <T extends Object> void save(T obj,String path) throws Exception
+	public static <T extends Object> void save(T obj,File file) throws Exception
 	{
-		File file = new File(path);
 		File directory = file.getParentFile();
 		if (!directory.exists())
 		{
 			directory.mkdirs();
 		}
 		
-		FileOutputStream fileOutputStream = new FileOutputStream(path);
+		FileOutputStream fileOutputStream = new FileOutputStream(file);
 		ObjectOutputStream oos = new ObjectOutputStream(fileOutputStream);
 
 		oos.writeObject(obj);
@@ -24,9 +23,9 @@ public class SavingAndLoadingBinary {
 		oos.close();
 	}
 	
-	public static <T extends Object> T load(String path) throws Exception
+	public static <T extends Object> T load(File file) throws Exception
 	{
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path));
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
 		@SuppressWarnings("unchecked")
 		T result = (T)ois.readObject();
 		ois.close();

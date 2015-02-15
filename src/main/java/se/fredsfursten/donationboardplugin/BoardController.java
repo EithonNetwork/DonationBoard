@@ -1,5 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
+import java.io.File;
+
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -9,18 +11,19 @@ import org.bukkit.scheduler.BukkitScheduler;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
 public class BoardController {
+	private static String addGroupCommand;
+	private static String removeGroupCommand;
+
 	private static BoardController singleton = null;
 
-	public static final int TOTAL_DAYS = 31;
-	public static final int TOTAL_LEVELS = 5;
-	private static final String FILE_PATH = "plugins/DonationBoard/donations.bin";
+	private static int numberOfDays;
+	private static int numberOfLevels;
 
 	private BoardModel _model;
 	private BoardView _view;
 	private JavaPlugin plugin = null;
 
 	private BoardController() {
-		this._model = new BoardModel(TOTAL_DAYS, TOTAL_LEVELS);
 	}
 
 	static BoardController get()
@@ -33,6 +36,12 @@ public class BoardController {
 
 	void enable(JavaPlugin plugin){
 		this.plugin = plugin;
+		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
+		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
+		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
+		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
+		load(DonationBoardPlugin.getDonationsStorageFile());
+		delayedRefresh();
 	}
 
 	void disable() {
@@ -61,6 +70,7 @@ public class BoardController {
 	}
 
 	void refreshNow() {
+		save(DonationBoardPlugin.getDonationsStorageFile());
 		this._view.refresh(this._model);
 	}
 
@@ -69,33 +79,53 @@ public class BoardController {
 		delayedRefresh();
 	}
 
-	public void save()
+	public void save(File file)
 	{
 		BoardStorageModel storageModel = new BoardStorageModel(this._view, this._model);
 		try {
-			SavingAndLoadingBinary.save(storageModel, FILE_PATH);
+			SavingAndLoadingBinary.save(storageModel, file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public void load()
+	public void load(File file)
 	{
 		BoardStorageModel storageModel;
 		try {
-			storageModel = SavingAndLoadingBinary.load(FILE_PATH);
+			storageModel = SavingAndLoadingBinary.load(file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return;
 		}
-		this._model = storageModel.getModel(TOTAL_DAYS, TOTAL_LEVELS);
+		this._model = storageModel.getModel(numberOfDays, numberOfLevels);
 		this._view = storageModel.getView();
-		delayedRefresh();
 	}
 
 	public void print(Player player) {
 		this._model.print(player);
+	}
+	
+	public void promote(Player player) {
+		int currentDonationlevel = this._model.donationLevel(0);
+		for (int level = 0; level <= currentDonationlevel; level++) {
+			addGroup(player, level);
+		}
+	}
+	
+	public void demote(Player player) {
+		for (int level = 0; level <= numberOfLevels; level++) {
+			removeGroup(player, level);
+		}
+	}
+
+	private void addGroup(Player player, int level) {
+		player.sendMessage(String.format(addGroupCommand, player.getName(), level+1));
+	}
+
+	private void removeGroup(Player player, int level) {
+		player.sendMessage(String.format(removeGroupCommand, player.getName(), level+1));
 	}
 }
