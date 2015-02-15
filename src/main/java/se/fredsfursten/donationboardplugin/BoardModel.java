@@ -1,62 +1,115 @@
 package se.fredsfursten.donationboardplugin;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
-class BoardModel implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private UUID worldId;
-	private int blockX;
-	private int blockY;
-	private int blockZ;
-	int stepX;
-	int stepZ;
-	ArrayList<DonationModel> donations;
-	
-	public BoardModel(Block block, int stepX, int stepZ, DonationInfo[][] donations)
+public class BoardModel {
+	public int _numberOfDays;
+	public int _numberOfLevels;
+
+	private Donation[][] _donations;
+
+	BoardModel(int numberOfDays, int numberOfLevels) {
+		this._numberOfDays = numberOfDays;
+		this._numberOfLevels = numberOfLevels;
+		this._donations = new Donation[this._numberOfDays][this._numberOfLevels];
+		resetBoard();
+	}
+
+	public int getNumberOfDays()
 	{
-		this.worldId = block.getWorld().getUID();
-		this.blockX = block.getX();
-		this.blockY = block.getY();
-		this.blockZ = block.getZ();
-		this.stepX = stepX;
-		this.stepZ = stepZ;
-		this.donations = new ArrayList<DonationModel>();
-		for (int day = 0; day < donations.length; day++) {
-			for (int level = 0; level < donations[day].length; level++) {
-				DonationInfo donation = donations[day][level];
-				this.donations.add(new DonationModel(day, level, donation.isEmpty(), donation.getCreatorId(), donation.getCreatorName()));
+		return this._numberOfDays;
+	}
+
+	public int getNumberOfLevels()
+	{
+		return this._numberOfLevels;
+	}
+
+	public void createFirstLineOfButtons() {
+		for (int day = 0; day < this._numberOfDays; day++) {
+			initializeNewDay(day);
+		}
+	}
+
+	private void initializeNewDay(int day) {
+		this._donations[day][0].setButton();
+		for (int level = 1; level < this._numberOfLevels; level++) {
+			this._donations[day][level].setEmpty();
+		}
+	}
+
+	public void shiftLeft() {
+		// Copy values from right
+		for (int day = 0; day < this._numberOfDays-1; day++) {
+			for (int level = 0; level < this._numberOfLevels; level++) {
+				this._donations[day][level].copy(this._donations[day+1][level]);
+			}
+		}			
+		// Initialize the last day
+		initializeNewDay(this._numberOfDays-1);
+	}
+
+	public BoardModel clone() {
+		BoardModel clone = new BoardModel(this._numberOfDays, this._numberOfLevels);
+		for (int day = 0; day < this._numberOfDays ; day++) {
+			for (int level = 0; level < this._numberOfLevels; level++) {
+				clone._donations[day][level].copy(this._donations[day][level]);
+			}
+		}
+		return clone;
+	}
+
+	public void markOnlyThis(int day, int level, boolean isEmpty, Player player) {
+		if (isEmpty)
+		{
+			this._donations[day][level].setEmpty();
+		} else if (player == null) {
+			this._donations[day][level].setButton();			
+		} else {
+			this._donations[day][level].setDonation(player);			
+		}
+	}
+
+	public void markAsDonated(int day, int level, Player player) {
+		if (!isInsideBoard(day, level)) return;
+		this._donations[day][level].setDonation(player);
+		if (!isInsideBoard(day, level+1)) return;
+		this._donations[day][level+1].setButton();
+	}
+
+	public boolean isInsideBoard(int day, int level) {
+		if (day < 0) return false;
+		if (day >= this._numberOfDays) return false;
+		if (level < 0) return false;
+		if (level >= this._numberOfLevels) return false;
+		return true;
+	}
+
+	public boolean isSame(BoardModel board, int day, int level) {
+		if (!isInsideBoard(day, level)) {
+			if (!board.isInsideBoard(day, level)) return true;
+		} else if (!board.isInsideBoard(day, level)) return false;
+		return this._donations[day][level].isSame(board._donations[day][level]);
+	}
+
+	public Donation getDonationInfo(int day, int level) {
+		if (!isInsideBoard(day, level)) return null;
+		return this._donations[day][level];
+	}
+
+	private void resetBoard() {
+		for (int day = 0; day < this._numberOfDays; day++) {
+			for (int level = 0; level < this._numberOfLevels; level++) {
+				this._donations[day][level] = new Donation();
 			}
 		}
 	}
-	
-	public Block getBlock()
-	{
-		World world = Bukkit.getWorld(worldId);
-		if (world == null) return null;
-		return world.getBlockAt(this.blockX, this.blockY, this.blockZ);
-	}
-	
-	public int getStepX()
-	{
-		return this.stepX;
-	}
-	
-	public int getStepZ()
-	{
-		return this.stepZ;
-	}
-	
-	public ArrayList<DonationModel> getDonations() {
-		return this.donations;
-	}
 
+	public void print(Player player) {
+		for (int day = 0; day < this._numberOfDays; day++) {
+			for (int level = 0; level < this._numberOfLevels; level++) {
+				player.sendMessage(String.format("%d,%d: %s", day, level, this._donations[day][level].toString()));
+			}
+		}
 	}
+}

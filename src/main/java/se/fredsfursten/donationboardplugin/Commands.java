@@ -13,6 +13,7 @@ import se.fredsfursten.plugintools.Misc;
 public class Commands {
 	private static Commands singleton = null;
 	private static final String SHIFT_COMMAND = "/donationboard shift";
+	private static final String PRINT_COMMAND = "/donationboard print";
 	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String LOAD_COMMAND = "/donationboard load";
 
@@ -44,7 +45,18 @@ public class Commands {
 			return;
 		}
 
-		DonationBoard.get().shiftLeft(player);
+		BoardController.get().shiftLeft(player);
+	}
+
+	void printCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.print")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(PRINT_COMMAND);
+			return;
+		}
+
+		BoardController.get().print(player);
 	}
 
 	void saveCommand(Player player, String[] args)
@@ -55,7 +67,7 @@ public class Commands {
 			return;
 		}
 
-		DonationBoard.get().save(player);
+		BoardController.get().save();
 	}
 
 	void loadCommand(Player player, String[] args)
@@ -66,7 +78,7 @@ public class Commands {
 			return;
 		}
 
-		DonationBoard.get().load(player);
+		BoardController.get().load();
 	}
 
 

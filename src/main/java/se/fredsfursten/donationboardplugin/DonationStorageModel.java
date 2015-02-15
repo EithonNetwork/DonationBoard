@@ -10,7 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-class DonationModel implements Serializable {
+class DonationStorageModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private int day;
 	private int level;
@@ -18,7 +18,7 @@ class DonationModel implements Serializable {
 	private UUID creatorId;
 	private String creatorName;
 	
-	public DonationModel(int day, int level, boolean isEmpty, UUID creatorId, String creatorName)
+	public DonationStorageModel(int day, int level, boolean isEmpty, UUID creatorId, String creatorName)
 	{
 		this.day = day;
 		this.level = level;
@@ -42,7 +42,7 @@ class DonationModel implements Serializable {
 		return this.isEmpty;
 	}
 	
-	public Player getCreator()
+	public Player getPlayer()
 	{
 		Player creator = Bukkit.getServer().getPlayer(this.creatorId);
 		return creator;
@@ -50,7 +50,7 @@ class DonationModel implements Serializable {
 	
 	public String getCreatorName()
 	{
-		Player creator = getCreator();
+		Player creator = getPlayer();
 		if (creator != null){
 			this.creatorName = creator.getName();
 		}
