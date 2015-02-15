@@ -1,4 +1,4 @@
-package se.fredsfursten.donationboardplugin;
+package se.fredsfursten.plugintools;
 
 import java.io.File;
 import java.io.FileInputStream;
