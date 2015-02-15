@@ -45,6 +45,8 @@ public class BoardController {
 	}
 
 	void disable() {
+		this._model = null;
+		this._view = null;
 	}
 
 	void donate(Player player, Block block) {
@@ -72,8 +74,8 @@ public class BoardController {
 
 	void refreshNow() {
 		if (this._model == null) return;
-		save(DonationBoardPlugin.getDonationsStorageFile());
 		this._view.refresh(this._model);
+		save(DonationBoardPlugin.getDonationsStorageFile());
 	}
 
 	public void shiftLeft(Player player) {
