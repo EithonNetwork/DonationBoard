@@ -11,8 +11,8 @@ import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 public class BoardController {
 	private static BoardController singleton = null;
 
-	public static final int TOTAL_DAYS = 5;
-	public static final int TOTAL_LEVELS = 3;
+	public static final int TOTAL_DAYS = 31;
+	public static final int TOTAL_LEVELS = 5;
 	private static final String FILE_PATH = "plugins/DonationBoard/donations.bin";
 
 	private BoardModel _model;

@@ -79,7 +79,7 @@ class BoardStorageModel implements Serializable {
 			int day = storageDonation.getDay();
 			int level = storageDonation.getLevel();
 			if (storageDonation.getPlayer() != null) {
-				model.markOnlyThis(day, level, storageDonation.getIsEmpty(), storageDonation.getPlayer());
+				model.markOnlyThis(day, level, storageDonation.getPlayer());
 			}
 		}
 		
