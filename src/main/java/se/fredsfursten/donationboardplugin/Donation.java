@@ -3,11 +3,7 @@ package se.fredsfursten.donationboardplugin;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
-import org.hamcrest.core.IsEqual;
 
 class Donation {
 	private enum DonationType {NONE, EMPTY, BUTTON, DONATION};

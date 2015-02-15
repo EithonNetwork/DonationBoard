@@ -6,6 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import se.fredsfursten.plugintools.SavingAndLoadingBinary;
+
 public class BoardController {
 	private static BoardController singleton = null;
 
