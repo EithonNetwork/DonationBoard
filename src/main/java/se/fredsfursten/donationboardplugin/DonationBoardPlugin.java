@@ -15,13 +15,13 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this, this);		
-		DonationBoard.get().enable(this);
+		BoardController.get().enable(this);
 		Commands.get().enable(this);
 	}
 
 	@Override
 	public void onDisable() {
-		DonationBoard.get().disable();
+		BoardController.get().disable();
 		Commands.get().disable();
 	}
 
@@ -32,10 +32,10 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 		switch (event.getClickedBlock().getType()) {
 		case STONE_BUTTON:
-			DonationBoard.get().initialize(player, event.getClickedBlock());
+			BoardController.get().initialize(player, event.getClickedBlock());
 			break;
 		case WOOD_BUTTON:
-			DonationBoard.get().donate(player, event.getClickedBlock());
+			BoardController.get().donate(player, event.getClickedBlock());
 			break;
 
 		default:
@@ -61,6 +61,8 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		String command = args[0].toLowerCase();
 		if (command.equals("shift")) {
 			Commands.get().shiftCommand(player, args);
+		} else if (command.equals("print")) {
+			Commands.get().printCommand(player, args);
 		} else if (command.equals("save")) {
 			Commands.get().saveCommand(player, args);
 		} else if (command.equals("load")) {
