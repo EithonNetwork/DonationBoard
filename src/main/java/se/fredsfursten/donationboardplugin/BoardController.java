@@ -94,6 +94,7 @@ public class BoardController {
 
 	public void load(File file)
 	{
+		if(!file.exists()) return;
 		BoardStorageModel storageModel;
 		try {
 			storageModel = SavingAndLoadingBinary.load(file);
@@ -119,7 +120,7 @@ public class BoardController {
 	}
 	
 	public void demote(Player player) {
-		for (int level = 0; level <= numberOfLevels; level++) {
+		for (int level = 0; level < numberOfLevels; level++) {
 			removeGroup(player, level);
 		}
 	}

@@ -1,4 +1,5 @@
 Days: 31
 Levels: 5
-AddGroupCommand: permission player %s addgroup PerkLevel%d
-RemoveGroupCommand: permission player %s removegroup PerkLevel%d
+AddGroupCommand: perm player %s addgroup PerkLevel%d
+RemoveGroupCommand: perm player %s removegroup PerkLevel%d
+MandatoryWorld: W_DonationWorld

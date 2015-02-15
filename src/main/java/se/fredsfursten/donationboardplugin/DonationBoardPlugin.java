@@ -19,6 +19,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
 	private static File donationsStorageFile;
 	private static PluginConfig configuration;
+	private static String mandatoryWorld;
 
 	@Override
 	public void onEnable() {
@@ -27,6 +28,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		} else {
 			configuration.load();
 		}
+		mandatoryWorld = DonationBoardPlugin.getPluginConfig().getString("MandatoryWorld");
 		donationsStorageFile = new File(getDataFolder(), "donations.bin");
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
@@ -52,7 +54,9 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		//if(!player.getWorld().getName().equalsIgnoreCase("w_donationworld")) return;
+		if (mandatoryWorld != null) {
+			if(!player.getWorld().getName().equalsIgnoreCase(mandatoryWorld)) return;
+		}
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 		switch (event.getClickedBlock().getType()) {
 		case STONE_BUTTON:
@@ -61,11 +65,8 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		case WOOD_BUTTON:
 			BoardController.get().donate(player, event.getClickedBlock());
 			break;
-
 		default:
 			break;
-		}
-		if(event.getClickedBlock().getType() == Material.WOOD_BUTTON) {
 		}
 	}
 
