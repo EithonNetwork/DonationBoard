@@ -40,7 +40,6 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	
 	@Override
 	public void onDisable() {
-		configuration.save();
 		BoardController.get().disable();
 		Commands.get().disable();
 	}

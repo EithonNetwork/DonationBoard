@@ -55,6 +55,7 @@ public class BoardController {
 	}
 
 	public void initialize(Player player, Block clickedBlock) {
+		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._view = new BoardView(clickedBlock);
 		this._model.createFirstLineOfButtons();
 		delayedRefresh();
@@ -70,6 +71,7 @@ public class BoardController {
 	}
 
 	void refreshNow() {
+		if (this._model == null) return;
 		save(DonationBoardPlugin.getDonationsStorageFile());
 		this._view.refresh(this._model);
 	}
@@ -105,6 +107,7 @@ public class BoardController {
 	}
 
 	public void print(Player player) {
+		player.sendMessage(DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand"));
 		this._model.print(player);
 	}
 	
@@ -122,10 +125,19 @@ public class BoardController {
 	}
 
 	private void addGroup(Player player, int level) {
-		player.sendMessage(String.format(addGroupCommand, player.getName(), level+1));
+		String command = String.format(addGroupCommand, player.getName(), level+1);
+		player.sendMessage(command);
+		executeCommand(command);
 	}
 
 	private void removeGroup(Player player, int level) {
-		player.sendMessage(String.format(removeGroupCommand, player.getName(), level+1));
+		String command = String.format(removeGroupCommand, player.getName(), level+1);
+		player.sendMessage(command);
+		executeCommand(command);
+	}
+	
+	private void executeCommand(String command)
+	{
+		this.plugin.getServer().dispatchCommand(this.plugin.getServer().getConsoleSender(), command);
 	}
 }
