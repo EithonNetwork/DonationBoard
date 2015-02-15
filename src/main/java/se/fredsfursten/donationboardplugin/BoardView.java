@@ -18,17 +18,17 @@ class BoardView {
 		this._stepX = 0;
 		this._stepZ = 1;	
 	}
-	
+
 	public World getWorld()
 	{
 		return this._startBlock.getWorld();
 	}
-	
+
 	public int getStepX()
 	{
 		return this._stepX;
 	}
-	
+
 	public int getStepZ()
 	{
 		return this._stepZ;
@@ -36,14 +36,28 @@ class BoardView {
 
 	public void refresh(BoardModel board)
 	{		
-		if (this._lastBoard == null) {
-			this._lastBoard = new BoardModel(board.getNumberOfDays(), board.getNumberOfLevels());
-		}
 		for (int day = 0; day < board.getNumberOfDays(); day++) {
 			for (int level = 0; level < board.getNumberOfLevels(); level++) {
 				if (!board.isSame(this._lastBoard, day, level)) {
 					Block block = getBlock(day, level);
 					update(block, board.getDonationInfo(day, level));
+				}
+			}
+			int newDonationLevel = board.donationLevel(day);
+			int lastDonationLevel = -2;
+			if (this._lastBoard != null) {
+				lastDonationLevel = this._lastBoard.donationLevel(day);
+			}
+			if (newDonationLevel != lastDonationLevel) {
+				int level = newDonationLevel + 1;
+				if (board.isInsideBoard(day, level)) {
+					createDonationButton(getBlock(day, level));
+				}
+				if (newDonationLevel < lastDonationLevel) {
+					level = lastDonationLevel + 1;
+					if (board.isInsideBoard(day, level)) {
+						createEmpty(getBlock(day, level));
+					}
 				}
 			}
 		}
@@ -73,8 +87,6 @@ class BoardView {
 	private void update(Block block, Donation donationInfo) {
 		if (donationInfo.isEmpty()) {
 			createEmpty(block);
-		} else if (donationInfo.isButton()) {
-			createDonationButton(block);
 		} else {
 			createPlayerSkull(donationInfo.getPlayer(), block);
 		}

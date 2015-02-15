@@ -32,8 +32,7 @@ public class BoardModel {
 	}
 
 	private void initializeNewDay(int day) {
-		this._donations[day][0].setButton();
-		for (int level = 1; level < this._numberOfLevels; level++) {
+		for (int level = 0; level < this._numberOfLevels; level++) {
 			this._donations[day][level].setEmpty();
 		}
 	}
@@ -59,22 +58,14 @@ public class BoardModel {
 		return clone;
 	}
 
-	public void markOnlyThis(int day, int level, boolean isEmpty, Player player) {
-		if (isEmpty)
+	public void markOnlyThis(int day, int level, Player player) {
+		if (!isInsideBoard(day, level)) return;
+		if (player == null)
 		{
-			this._donations[day][level].setEmpty();
-		} else if (player == null) {
-			this._donations[day][level].setButton();			
+			this._donations[day][level].setEmpty();		
 		} else {
 			this._donations[day][level].setDonation(player);			
 		}
-	}
-
-	public void markAsDonated(int day, int level, Player player) {
-		if (!isInsideBoard(day, level)) return;
-		this._donations[day][level].setDonation(player);
-		if (!isInsideBoard(day, level+1)) return;
-		this._donations[day][level+1].setButton();
 	}
 
 	public boolean isInsideBoard(int day, int level) {
@@ -87,8 +78,8 @@ public class BoardModel {
 
 	public boolean isSame(BoardModel board, int day, int level) {
 		if (!isInsideBoard(day, level)) {
-			if (!board.isInsideBoard(day, level)) return true;
-		} else if (!board.isInsideBoard(day, level)) return false;
+			if ((board == null) || !board.isInsideBoard(day, level)) return true;
+		} else if ((board == null) || !board.isInsideBoard(day, level)) return false;
 		return this._donations[day][level].isSame(board._donations[day][level]);
 	}
 
@@ -111,5 +102,14 @@ public class BoardModel {
 				player.sendMessage(String.format("%d,%d: %s", day, level, this._donations[day][level].toString()));
 			}
 		}
+	}
+
+	public int donationLevel(int day) {
+		int donationLevel = -1;
+		for (int level = 0; level < this._numberOfLevels; level++) {
+			if (!this._donations[day][level].isDonation()) break;
+			donationLevel = level;
+		}
+		return donationLevel;
 	}
 }

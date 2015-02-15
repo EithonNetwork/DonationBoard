@@ -11,8 +11,8 @@ import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 public class BoardController {
 	private static BoardController singleton = null;
 
-	public static final int TOTAL_DAYS = 31;
-	public static final int TOTAL_LEVELS = 5;
+	public static final int TOTAL_DAYS = 5;
+	public static final int TOTAL_LEVELS = 3;
 	private static final String FILE_PATH = "plugins/DonationBoard/donations.bin";
 
 	private BoardModel _model;
@@ -41,7 +41,7 @@ public class BoardController {
 	void donate(Player player, Block block) {
 		int day = this._view.calculateDay(block);
 		int level = this._view.calculateLevel(block);
-		this._model.markAsDonated(day, level, player);
+		this._model.markOnlyThis(day, level, player);
 		delayedRefresh();
 	}
 
