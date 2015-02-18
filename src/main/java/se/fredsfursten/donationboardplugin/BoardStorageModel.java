@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 class BoardStorageModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -16,7 +17,6 @@ class BoardStorageModel implements Serializable {
 	private int blockZ;
 	int stepX;
 	int stepZ;
-	ArrayList<DonationStorageModel> donations;
 
 	public BoardStorageModel(Block block, int stepX, int stepZ, BoardModel model)
 	{
@@ -30,13 +30,6 @@ class BoardStorageModel implements Serializable {
 		this.blockZ = block.getZ();
 		this.stepX = stepX;
 		this.stepZ = stepZ;
-		this.donations = new ArrayList<DonationStorageModel>();
-		for (int day = 0; day < model.getNumberOfDays(); day++) {
-			for (int level = 0; level < model.getNumberOfLevels(); level++) {
-				Donation donation = model.getDonationInfo(day, level);
-				this.donations.add(new DonationStorageModel(day, level, donation.isEmpty(), donation.getCreatorId(), donation.getCreatorName()));
-			}
-		}
 	}
 
 	public BoardStorageModel(BoardView view, BoardModel model) {
@@ -62,27 +55,8 @@ class BoardStorageModel implements Serializable {
 		return this.stepZ;
 	}
 
-	public ArrayList<DonationStorageModel> getDonations()
-	{
-		return this.donations;
-	}
-
 	public BoardView getView()
 	{
 		return new BoardView(getBlock());
-	}
-
-	public BoardModel getModel(int numberOfDays, int numberOfLevels)
-	{
-		BoardModel model = new BoardModel(numberOfDays, numberOfLevels);
-		for (DonationStorageModel storageDonation : getDonations()) {
-			int day = storageDonation.getDay();
-			int level = storageDonation.getLevel();
-			if (storageDonation.getPlayer() != null) {
-				model.markOnlyThis(day, level, storageDonation.getPlayer());
-			}
-		}
-		
-		return model;
 	}
 }
