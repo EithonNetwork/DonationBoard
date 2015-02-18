@@ -40,8 +40,12 @@ public class BoardController {
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
 		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
-		load(DonationBoardPlugin.getDonationsStorageFile());
-		delayedRefresh();
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this.plugin, new Runnable() {
+			public void run() {
+				load(DonationBoardPlugin.getDonationsStorageFile());
+			}
+		}, 100L);
 	}
 
 	void disable() {
@@ -75,7 +79,7 @@ public class BoardController {
 	void refreshNow() {
 		if (this._model == null) return;
 		this._view.refresh(this._model);
-		save(DonationBoardPlugin.getDonationsStorageFile());
+		//save(DonationBoardPlugin.getDonationsStorageFile());
 	}
 
 	public void shiftLeft(Player player) {
@@ -92,6 +96,9 @@ public class BoardController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("Save");
+		print(null);
+		load(file);
 	}
 
 	public void load(File file)
@@ -107,20 +114,22 @@ public class BoardController {
 		}
 		this._model = storageModel.getModel(numberOfDays, numberOfLevels);
 		this._view = storageModel.getView();
+		System.out.println("Load");
+		print(null);
+		delayedRefresh();
 	}
 
 	public void print(Player player) {
-		player.sendMessage(DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand"));
 		this._model.print(player);
 	}
-	
+
 	public void promote(Player player) {
 		int currentDonationlevel = this._model.donationLevel(0);
 		for (int level = 0; level <= currentDonationlevel; level++) {
 			addGroup(player, level);
 		}
 	}
-	
+
 	public void demote(Player player) {
 		for (int level = 0; level < numberOfLevels; level++) {
 			removeGroup(player, level);
@@ -138,7 +147,7 @@ public class BoardController {
 		player.sendMessage(command);
 		executeCommand(command);
 	}
-	
+
 	private void executeCommand(String command)
 	{
 		this.plugin.getServer().dispatchCommand(this.plugin.getServer().getConsoleSender(), command);

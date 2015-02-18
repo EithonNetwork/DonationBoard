@@ -38,10 +38,16 @@ class DonationStorageModel implements Serializable {
 		return this.isEmpty;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public Player getPlayer()
 	{
-		Player creator = Bukkit.getServer().getPlayer(this.creatorId);
-		return creator;
+		if (this.creatorId == null) return null;
+		Player player = Bukkit.getServer().getPlayer(this.creatorId);
+		if (player == null) {
+			if (this.creatorName == null) return null;
+			player = Bukkit.getServer().getPlayer(creatorName);
+		}
+		return player;
 	}
 	
 	public String getCreatorName()
@@ -51,5 +57,10 @@ class DonationStorageModel implements Serializable {
 			this.creatorName = creator.getName();
 		}
 		return this.creatorName;
+	}
+	
+	public String toString()
+	{
+		return String.format("(%d,%d): %s (%s)", this.day, this.level, this.creatorName, this.creatorId);
 	}
 }

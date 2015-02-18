@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 class BoardStorageModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -74,15 +75,20 @@ class BoardStorageModel implements Serializable {
 
 	public BoardModel getModel(int numberOfDays, int numberOfLevels)
 	{
+		System.out.println("getModel");
 		BoardModel model = new BoardModel(numberOfDays, numberOfLevels);
 		for (DonationStorageModel storageDonation : getDonations()) {
+			System.out.println(storageDonation.toString());
 			int day = storageDonation.getDay();
 			int level = storageDonation.getLevel();
-			if (storageDonation.getPlayer() != null) {
-				model.markOnlyThis(day, level, storageDonation.getPlayer());
+			Player player = storageDonation.getPlayer();
+			if (player != null) {
+				model.markOnlyThis(day, level, player);
+				System.out.println("Player found");
 			}
 		}
-		
+		System.out.println("result");
+		model.print(null);		
 		return model;
 	}
 }

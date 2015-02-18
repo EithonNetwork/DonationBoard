@@ -99,7 +99,9 @@ public class BoardModel {
 	public void print(Player player) {
 		for (int day = 0; day < this._numberOfDays; day++) {
 			for (int level = 0; level < this._numberOfLevels; level++) {
-				player.sendMessage(String.format("%d,%d: %s", day, level, this._donations[day][level].toString()));
+				String message = String.format("%d,%d: %s", day, level, this._donations[day][level].toString());
+				if (player != null) player.sendMessage(message);
+				else System.out.println(message);
 			}
 		}
 	}

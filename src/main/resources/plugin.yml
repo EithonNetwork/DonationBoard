@@ -6,7 +6,7 @@ description: A Minecraft plugin for keeping scores of donations on a donation bo
 commands:
   donationboard:
     description: Control the donation board
-    usage: /donationboard shift | print | promote | demote
+    usage: /donationboard shift | print | load | save | promote | demote
     permission-message: You don't have <permission>
 permissions:
   donationboard.*:
@@ -14,6 +14,8 @@ permissions:
     default: op
     donationboard.shift: true
     donationboard.print: true
+    donationboard.load: true
+    donationboard.save: true
     donationboard.promote: true
     donationboard.demote: true
   donationboard.shift:
@@ -21,6 +23,12 @@ permissions:
     default: op
   donationboard.print:
     description: Access to /donationboard print command
+    default: op
+  donationboard.load:
+    description: Access to /donationboard load command
+    default: op
+  donationboard.save:
+    description: Access to /donationboard save command
     default: op
   donationboard.promote:
     description: Access to /donationboard promote command

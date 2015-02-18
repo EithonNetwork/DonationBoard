@@ -15,6 +15,8 @@ public class Commands {
 	private static Commands singleton = null;
 	private static final String SHIFT_COMMAND = "/donationboard shift";
 	private static final String PRINT_COMMAND = "/donationboard print";
+	private static final String LOAD_COMMAND = "/donationboard load";
+	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String PROMOTE_COMMAND = "/donationboard promote [username]";
 	private static final String DEMOTE_COMMAND = "/donationboard demote [username]";
 
@@ -58,6 +60,28 @@ public class Commands {
 		}
 
 		BoardController.get().print(player);
+	}
+
+	void loadCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.load")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(LOAD_COMMAND);
+			return;
+		}
+
+		BoardController.get().load(DonationBoardPlugin.getDonationsStorageFile());
+	}
+
+	void saveCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.load")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(SAVE_COMMAND);
+			return;
+		}
+
+		BoardController.get().save(DonationBoardPlugin.getDonationsStorageFile());
 	}
 
 	@SuppressWarnings("deprecation")
