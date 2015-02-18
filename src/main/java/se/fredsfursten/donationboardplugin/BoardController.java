@@ -40,12 +40,8 @@ public class BoardController {
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
 		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(this.plugin, new Runnable() {
-			public void run() {
-				load(DonationBoardPlugin.getDonationsStorageFile());
-			}
-		}, 100L);
+		this._model = new BoardModel(numberOfDays, numberOfLevels);
+		load(DonationBoardPlugin.getDonationsStorageFile());
 	}
 
 	void disable() {
@@ -56,7 +52,7 @@ public class BoardController {
 	void donate(Player player, Block block) {
 		int day = this._view.calculateDay(block);
 		int level = this._view.calculateLevel(block);
-		this._model.markOnlyThis(day, level, player);
+		this._model.markOnlyThis(day, level, player.getName());
 		delayedRefresh();
 	}
 
@@ -64,6 +60,7 @@ public class BoardController {
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._view = new BoardView(clickedBlock);
 		this._model.createFirstLineOfButtons();
+		save(DonationBoardPlugin.getDonationsStorageFile());
 		delayedRefresh();
 	}
 
@@ -79,7 +76,6 @@ public class BoardController {
 	void refreshNow() {
 		if (this._model == null) return;
 		this._view.refresh(this._model);
-		//save(DonationBoardPlugin.getDonationsStorageFile());
 	}
 
 	public void shiftLeft(Player player) {
@@ -96,9 +92,6 @@ public class BoardController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("Save");
-		print(null);
-		load(file);
 	}
 
 	public void load(File file)
@@ -112,9 +105,8 @@ public class BoardController {
 			e.printStackTrace();
 			return;
 		}
-		this._model = storageModel.getModel(numberOfDays, numberOfLevels);
 		this._view = storageModel.getView();
-		System.out.println("Load");
+		this._view.updateBoardModel(this._model);
 		print(null);
 		delayedRefresh();
 	}

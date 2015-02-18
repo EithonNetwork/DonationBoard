@@ -1,5 +1,6 @@
 package se.fredsfursten.donationboardplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -10,11 +11,9 @@ class BoardView {
 	private Block _startBlock;
 	int _stepX;
 	int _stepZ;
-	private BoardModel _lastBoard;
 
 	BoardView(Block startBlock) {
 		this._startBlock = startBlock;
-		this._lastBoard = null;
 		this._stepX = 0;
 		this._stepZ = 1;	
 	}
@@ -37,31 +36,51 @@ class BoardView {
 	public void refresh(BoardModel board)
 	{		
 		for (int day = 0; day < board.getNumberOfDays(); day++) {
-			for (int level = 0; level < board.getNumberOfLevels(); level++) {
-				if (!board.isSame(this._lastBoard, day, level)) {
-					Block block = getBlock(day, level);
-					update(block, board.getDonationInfo(day, level));
-				}
-			}
 			int newDonationLevel = board.donationLevel(day);
-			int lastDonationLevel = -2;
-			if (this._lastBoard != null) {
-				lastDonationLevel = this._lastBoard.donationLevel(day);
-			}
-			if (newDonationLevel != lastDonationLevel) {
-				int level = newDonationLevel + 1;
-				if (board.isInsideBoard(day, level)) {
-					createDonationButton(getBlock(day, level));
-				}
-				if (newDonationLevel < lastDonationLevel) {
-					level = lastDonationLevel + 1;
-					if (board.isInsideBoard(day, level)) {
-						createEmpty(getBlock(day, level));
-					}
+			for (int level = 0; level < board.getNumberOfLevels(); level++) {
+				Block block = getBlock(day, level);
+				String blockPlayerName = getSkullOwner(block);
+				String modelPlayerName = board.getDonationInfo(day, level).getPlayerName();
+				if (modelPlayerName != null) {
+					// A skull
+					if (blockPlayerName != modelPlayerName) createPlayerSkull(modelPlayerName, block);
+				} else if (level == newDonationLevel+1) {
+					// A button
+					if (!isButton(block)) createDonationButton(block);
+				} else {
+					if (!isAir(block)) createEmpty(block);
 				}
 			}
 		}
-		this._lastBoard = board.clone();
+	}
+
+	public void updateBoardModel(BoardModel board) {
+		for (int day = 0; day < board.getNumberOfDays(); day++) {
+			for (int level = 0; level < board.getNumberOfLevels(); level++) {
+				Block block = getBlock(day, level);
+				String playerName = getSkullOwner(block);
+				if (playerName != null) board.markOnlyThis(day, level, playerName);
+			}
+		}
+	}
+
+	private String getSkullOwner(Block block)
+	{
+		if (block.getType() != Material.SKULL) return null;
+
+		Skull skull = (Skull)block.getState();
+		String playerName = skull.getOwner();
+		return playerName;
+	}
+
+	private boolean isButton(Block block)
+	{
+		return (block.getType() == Material.WOOD_BUTTON);
+	}
+
+	private boolean isAir(Block block)
+	{
+		return (block.getType() == Material.AIR);
 	}
 
 	int calculateDay(Block block) {
@@ -84,14 +103,6 @@ class BoardView {
 		return block;
 	}
 
-	private void update(Block block, Donation donationInfo) {
-		if (donationInfo.isEmpty()) {
-			createEmpty(block);
-		} else {
-			createPlayerSkull(donationInfo.getPlayer(), block);
-		}
-	}
-
 	private void createEmpty(Block block) {
 		block.setType(Material.AIR);
 	}
@@ -103,11 +114,11 @@ class BoardView {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void createPlayerSkull(Player player, Block block) {
+	private void createPlayerSkull(String playerName, Block block) {
 		block.setType(Material.SKULL);
 		block.setData((byte) 4);
 		Skull skull = (Skull)block.getState();
-		skull.setOwner(player.getName());
+		skull.setOwner(playerName);
 		skull.update();
 	}
 }

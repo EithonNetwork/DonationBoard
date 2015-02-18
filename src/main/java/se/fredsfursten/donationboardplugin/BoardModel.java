@@ -58,13 +58,13 @@ public class BoardModel {
 		return clone;
 	}
 
-	public void markOnlyThis(int day, int level, Player player) {
+	public void markOnlyThis(int day, int level, String playerName) {
 		if (!isInsideBoard(day, level)) return;
-		if (player == null)
+		if (playerName == null)
 		{
 			this._donations[day][level].setEmpty();		
 		} else {
-			this._donations[day][level].setDonation(player);			
+			this._donations[day][level].setDonation(playerName);			
 		}
 	}
 

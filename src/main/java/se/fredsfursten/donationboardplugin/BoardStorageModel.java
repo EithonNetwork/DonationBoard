@@ -17,7 +17,6 @@ class BoardStorageModel implements Serializable {
 	private int blockZ;
 	int stepX;
 	int stepZ;
-	ArrayList<DonationStorageModel> donations;
 
 	public BoardStorageModel(Block block, int stepX, int stepZ, BoardModel model)
 	{
@@ -31,13 +30,6 @@ class BoardStorageModel implements Serializable {
 		this.blockZ = block.getZ();
 		this.stepX = stepX;
 		this.stepZ = stepZ;
-		this.donations = new ArrayList<DonationStorageModel>();
-		for (int day = 0; day < model.getNumberOfDays(); day++) {
-			for (int level = 0; level < model.getNumberOfLevels(); level++) {
-				Donation donation = model.getDonationInfo(day, level);
-				this.donations.add(new DonationStorageModel(day, level, donation.isEmpty(), donation.getCreatorId(), donation.getCreatorName()));
-			}
-		}
 	}
 
 	public BoardStorageModel(BoardView view, BoardModel model) {
@@ -63,32 +55,8 @@ class BoardStorageModel implements Serializable {
 		return this.stepZ;
 	}
 
-	public ArrayList<DonationStorageModel> getDonations()
-	{
-		return this.donations;
-	}
-
 	public BoardView getView()
 	{
 		return new BoardView(getBlock());
-	}
-
-	public BoardModel getModel(int numberOfDays, int numberOfLevels)
-	{
-		System.out.println("getModel");
-		BoardModel model = new BoardModel(numberOfDays, numberOfLevels);
-		for (DonationStorageModel storageDonation : getDonations()) {
-			System.out.println(storageDonation.toString());
-			int day = storageDonation.getDay();
-			int level = storageDonation.getLevel();
-			Player player = storageDonation.getPlayer();
-			if (player != null) {
-				model.markOnlyThis(day, level, player);
-				System.out.println("Player found");
-			}
-		}
-		System.out.println("result");
-		model.print(null);		
-		return model;
 	}
 }
