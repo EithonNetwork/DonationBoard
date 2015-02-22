@@ -127,6 +127,7 @@ public class BoardController {
 
 	private void changePerkLevel(int toLevel) 
 	{
+		if (this._knownPlayers == null) return;
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
 		}	
