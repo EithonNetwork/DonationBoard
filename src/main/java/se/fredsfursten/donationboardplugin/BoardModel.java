@@ -106,7 +106,7 @@ public class BoardModel {
 		}
 	}
 
-	public int donationLevel(int day) {
+	public int getDonationLevel(int day) {
 		int donationLevel = -1;
 		for (int level = 0; level < this._numberOfLevels; level++) {
 			if (!this._donations[day][level].isDonation()) break;
