@@ -15,7 +15,7 @@ public class PlayerInfo {
 	private int donationTokens;
 	private int perkLevel;
 
-	PlayerInfo()
+	static
 	{
 		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
 		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
@@ -27,7 +27,7 @@ public class PlayerInfo {
 		this.name = player.getName();
 		this.id = player.getUniqueId();
 		this.setDonationTokens(0);
-		this.perkLevel = 0;
+		this.perkLevel = -1;
 	}
 
 	public PlayerInfo(UUID uniqueId, int donationTokens)
@@ -36,7 +36,7 @@ public class PlayerInfo {
 		this.name = null;
 		this.id = player.getUniqueId();
 		this.setDonationTokens(donationTokens);
-		this.perkLevel = 0;
+		this.perkLevel = -1;
 	}
 
 	public int getDonationTokens() {
@@ -98,5 +98,10 @@ public class PlayerInfo {
 	private void executeCommand(String command)
 	{
 		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+	}
+	
+	public String toString()
+	{
+		return String.format("%s (%d tokens): %d perks", this.name, this.donationTokens, this.perkLevel);
 	}
 }

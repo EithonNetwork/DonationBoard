@@ -116,7 +116,10 @@ public class BoardController {
 	}
 
 	public void print(Player player) {
-		this._model.print(player);
+		//this._model.print(player);
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			player.sendMessage(playerInfo.toString());
+		}
 	}
 
 	public void changePerkLevel() 
@@ -134,7 +137,9 @@ public class BoardController {
 	}
 
 	public void register(Player player) {
-		this._knownPlayers.put(player, new PlayerInfo(player));
-		
+		int toLevel = this._model.getDonationLevel(0);
+		PlayerInfo playerInfo = new PlayerInfo(player);
+		playerInfo.demoteOrPromote(toLevel);
+		this._knownPlayers.put(player, playerInfo);
 	}
 }

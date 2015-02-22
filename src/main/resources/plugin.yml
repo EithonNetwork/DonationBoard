@@ -29,6 +29,6 @@ permissions:
   donationboard.save:
     description: Access to /donationboard save command
     default: op
-  donationboard.perk:
+  donationboard.register:
     description: Access to /donationboard register command
     default: op
