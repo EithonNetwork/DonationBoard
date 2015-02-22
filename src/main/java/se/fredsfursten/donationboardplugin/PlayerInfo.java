@@ -73,7 +73,7 @@ public class PlayerInfo {
 		if (toLevel < this.perkLevel) {
 			for (int level = this.perkLevel; level > toLevel; level--) {
 				removeGroup(this.player, level);
-				this.perkLevel = level;
+				this.perkLevel = level-1;
 			}
 		} else {
 			for (int level = this.perkLevel+1; level <= toLevel; level++) {
