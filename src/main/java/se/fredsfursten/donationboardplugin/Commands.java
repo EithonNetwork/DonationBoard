@@ -17,11 +17,10 @@ public class Commands {
 	private static final String PRINT_COMMAND = "/donationboard print";
 	private static final String LOAD_COMMAND = "/donationboard load";
 	private static final String SAVE_COMMAND = "/donationboard save";
-	private static final String PROMOTE_COMMAND = "/donationboard promote [username]";
-	private static final String DEMOTE_COMMAND = "/donationboard demote [username]";
+	private static final String REGISTER_COMMAND = "/donationboard register <player>";
 
 	private JavaPlugin plugin = null;
-	
+
 	private Commands() {
 	}
 
@@ -85,43 +84,20 @@ public class Commands {
 	}
 
 	@SuppressWarnings("deprecation")
-	void promoteCommand(Player player, String[] args)
+	void registerCommand(Player player, String[] args)
 	{
 		if (!verifyPermission(player, "donationboard.load")) return;
 		if (!arrayLengthIsWithinInterval(args, 1, 2)) {
-			player.sendMessage(PROMOTE_COMMAND);
+			player.sendMessage(REGISTER_COMMAND);
 			return;
 		}
 
-		Player affectedPlayer = player;
+		Player registerPlayer = player;
 		if (args.length > 1) {
-			affectedPlayer = Bukkit.getPlayer(args[1]);
-			if (affectedPlayer == null)
-			{
-				player.sendMessage("Unknown player: " + args[1]);
-			}
-		}
-		BoardController.get().promote(player);
-	}
-
-	@SuppressWarnings("deprecation")
-	void demoteCommand(Player player, String[] args)
-	{
-		if (!verifyPermission(player, "donationboard.load")) return;
-		if (!arrayLengthIsWithinInterval(args, 1, 2)) {
-			player.sendMessage(DEMOTE_COMMAND);
-			return;
+			registerPlayer = Bukkit.getPlayer(args[1]);
 		}
 
-		Player affectedPlayer = player;
-		if (args.length > 1) {
-			affectedPlayer = Bukkit.getPlayer(args[1]);
-			if (affectedPlayer == null)
-			{
-				player.sendMessage("Unknown player: " + args[1]);
-			}
-		}
-		BoardController.get().demote(player);
+		BoardController.get().register(registerPlayer);
 	}
 
 

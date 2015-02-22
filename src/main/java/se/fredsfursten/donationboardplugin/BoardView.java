@@ -36,7 +36,7 @@ class BoardView {
 	public void refresh(BoardModel board)
 	{		
 		for (int day = 0; day < board.getNumberOfDays(); day++) {
-			int newDonationLevel = board.donationLevel(day);
+			int newDonationLevel = board.getDonationLevel(day);
 			for (int level = 0; level < board.getNumberOfLevels(); level++) {
 				Block block = getBlock(day, level);
 				String blockPlayerName = getSkullOwner(block);
