@@ -29,24 +29,6 @@ public class Timer {
 
 	public void enable(JavaPlugin plugin){
 		this._plugin = plugin;
-		LocalDateTime date = LocalDateTime.now();
-		setAlarm(date, new Runnable() {
-			public void run() {
-				Bukkit.getServer().getConsoleSender().sendMessage("!!! Alarm 1 !!!");
-			}
-		});
-		date = date.plusSeconds(30);
-		setAlarm(date, new Runnable() {
-			public void run() {
-				Bukkit.getServer().getConsoleSender().sendMessage("!!! Alarm 2 !!!");
-			}
-		});
-		date = date.plusSeconds(30);
-		setAlarm(date, new Runnable() {
-			public void run() {
-				Bukkit.getServer().getConsoleSender().sendMessage("!!! Alarm 3 !!!");
-			}
-		});
 		tick();
 	}
 

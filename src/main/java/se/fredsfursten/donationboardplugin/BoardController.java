@@ -96,7 +96,7 @@ public class BoardController {
 		this._view.refresh(this._model);
 	}
 
-	public void shiftLeft(Player player) {
+	public void shiftLeft() {
 		this._model.shiftLeft();
 		changePerkLevel();
 		delayedRefresh();

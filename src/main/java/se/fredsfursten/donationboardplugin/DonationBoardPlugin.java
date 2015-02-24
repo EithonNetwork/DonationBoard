@@ -1,7 +1,11 @@
 package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -35,8 +39,23 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
 		Timer.get().enable(this);
+		setShiftTimer();
+	}
+
+	private void setShiftTimer() {
+		LocalDateTime alarmTime = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
+		Timer.get().setAlarm(alarmTime, new Runnable() {
+			public void run() {
+				keepOnShifting();
+			}
+		});
 	}
 	
+	protected void keepOnShifting() {
+		BoardController.get().shiftLeft();
+		setShiftTimer();
+	}
+
 	@Override
 	public void onDisable() {
 		BoardController.get().disable();

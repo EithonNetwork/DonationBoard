@@ -48,7 +48,7 @@ public class Commands {
 			return;
 		}
 
-		BoardController.get().shiftLeft(player);
+		BoardController.get().shiftLeft();
 	}
 
 	void printCommand(Player player, String[] args)
