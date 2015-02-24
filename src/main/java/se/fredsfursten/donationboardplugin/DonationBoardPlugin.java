@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.PluginConfig;
+import se.fredsfursten.plugintools.Timer;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
@@ -33,17 +34,19 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
-	}
-
-	public static File getDonationsStorageFile()
-	{
-		return donationsStorageFile;
+		Timer.get().enable(this);
 	}
 	
 	@Override
 	public void onDisable() {
 		BoardController.get().disable();
 		Commands.get().disable();
+		Timer.get().disable();
+	}
+
+	public static File getDonationsStorageFile()
+	{
+		return donationsStorageFile;
 	}
 
 	public static FileConfiguration getPluginConfig()
