@@ -40,6 +40,7 @@ public class BoardController {
 		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
+		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		load();
 	}
 
@@ -48,6 +49,7 @@ public class BoardController {
 		this._model = null;
 		this._view = null;
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
+		this._plugin = null;
 	}
 
 	void increaseLevel(Player player, Block block) {
@@ -158,7 +160,6 @@ public class BoardController {
 
 	private void changePerkLevel(int toLevel) 
 	{
-		if (this._knownPlayers == null) return;
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
 		}	
