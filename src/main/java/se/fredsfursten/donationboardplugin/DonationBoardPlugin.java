@@ -63,7 +63,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			BoardController.get().initialize(player, event.getClickedBlock());
 			break;
 		case WOOD_BUTTON:
-			BoardController.get().donate(player, event.getClickedBlock());
+			BoardController.get().increaseLevel(player, event.getClickedBlock());
 			break;
 		default:
 			break;
@@ -94,6 +94,8 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			Commands.get().saveCommand(player, args);
 		} else if (command.equals("register")) {
 			Commands.get().registerCommand(player, args);
+		} else if (command.equals("donate")) {
+			Commands.get().donateCommand(player, args);
 		} else {
 			sender.sendMessage("Could not understand command.");
 			return false;

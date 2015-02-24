@@ -18,6 +18,7 @@ public class Commands {
 	private static final String LOAD_COMMAND = "/donationboard load";
 	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String REGISTER_COMMAND = "/donationboard register <player>";
+	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens>";
 
 	private JavaPlugin plugin = null;
 
@@ -74,7 +75,7 @@ public class Commands {
 
 	void saveCommand(Player player, String[] args)
 	{
-		if (!verifyPermission(player, "donationboard.load")) return;
+		if (!verifyPermission(player, "donationboard.save")) return;
 		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
 			player.sendMessage(SAVE_COMMAND);
 			return;
@@ -86,7 +87,7 @@ public class Commands {
 	@SuppressWarnings("deprecation")
 	void registerCommand(Player player, String[] args)
 	{
-		if (!verifyPermission(player, "donationboard.load")) return;
+		if (!verifyPermission(player, "donationboard.donate")) return;
 		if (!arrayLengthIsWithinInterval(args, 1, 2)) {
 			player.sendMessage(REGISTER_COMMAND);
 			return;
@@ -98,6 +99,32 @@ public class Commands {
 		}
 
 		BoardController.get().register(registerPlayer);
+	}
+
+	@SuppressWarnings("deprecation")
+	void donateCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.donate")) return;
+		if (!arrayLengthIsWithinInterval(args, 3, 3)) {
+			player.sendMessage(DONATE_COMMAND);
+			return;
+		}
+
+		Player donatePlayer  = Bukkit.getPlayer(args[1]);
+		if (donatePlayer == null) {
+			player.sendMessage(String.format("Unknown player: %s", args[1]));
+			return;
+		}
+		
+		int tokens = 0;
+		try {
+			tokens = Integer.parseUnsignedInt(args[2]);
+		} catch (Exception e) {
+			player.sendMessage(String.format("Number of tokens could not be understood: %s", args[2]));
+			return;
+		}
+
+		BoardController.get().donate(donatePlayer, tokens);
 	}
 
 

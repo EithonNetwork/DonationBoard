@@ -51,11 +51,23 @@ public class BoardController {
 		this._knownPlayers = null;
 	}
 
-	void donate(Player player, Block block) {
+	void increaseLevel(Player player, Block block) {
+		boolean hasTokens = false;
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo != null) {
+			if (playerInfo.getDonationTokens() > 0) hasTokens = true;
+		}
+		if (!hasTokens) {
+			player.sendMessage("You must have E-tokens to raise the perk level.");
+			player.sendMessage("You get E-tokens by donating money at http://eithon.org/donate.");
+			return;
+		}
 		int day = this._view.calculateDay(block);
 		int level = this._view.calculateLevel(block);
 		this._model.markOnlyThis(day, level, player.getName());
+		playerInfo.subtractDonationTokens(1);
 		delayedRefresh();
+		player.sendMessage(String.format("You now have %d E-tokens.", playerInfo.getDonationTokens()));
 	}
 
 	public void initialize(Player player, Block clickedBlock) {
@@ -133,13 +145,34 @@ public class BoardController {
 		if (this._knownPlayers == null) return;
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
+			Player player = playerInfo.getPlayer();
+			if (player != null) {
+				player.sendMessage(String.format("Your perk level has been changed to %d.", toLevel+1));
+			}
 		}	
 	}
 
 	public void register(Player player) {
 		int toLevel = this._model.getDonationLevel(0);
-		PlayerInfo playerInfo = new PlayerInfo(player);
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		playerInfo.demoteOrPromote(toLevel);
 		this._knownPlayers.put(player, playerInfo);
+		player.sendMessage(String.format("You are currently at perk level %d.", toLevel+1));
+	}
+
+	public void donate(Player player, int tokens) {
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+		playerInfo.addDonationTokens(tokens);
+		player.sendMessage(String.format("You now have %d E-tokens.", playerInfo.getDonationTokens()));
+		save(DonationBoardPlugin.getDonationsStorageFile());
+	}
+
+	private PlayerInfo getOrAddPlayerInfo(Player player) {
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo == null) {
+			playerInfo = new PlayerInfo(player);
+			this._knownPlayers.put(player, playerInfo);
+		}
+		return playerInfo;
 	}
 }

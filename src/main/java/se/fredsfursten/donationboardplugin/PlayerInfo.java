@@ -26,7 +26,7 @@ public class PlayerInfo {
 		this.player = player;
 		this.name = player.getName();
 		this.id = player.getUniqueId();
-		this.setDonationTokens(0);
+		this.donationTokens = 0;
 		this.perkLevel = -1;
 	}
 
@@ -34,8 +34,8 @@ public class PlayerInfo {
 	{
 		this.player = null;
 		this.name = null;
-		this.id = player.getUniqueId();
-		this.setDonationTokens(donationTokens);
+		this.id = uniqueId;
+		this.donationTokens = donationTokens;
 		this.perkLevel = -1;
 	}
 
@@ -43,8 +43,12 @@ public class PlayerInfo {
 		return this.donationTokens;
 	}
 
-	public void setDonationTokens(int donationTokens) {
-		this.donationTokens = donationTokens;
+	public void addDonationTokens(int tokens) {
+		this.donationTokens+=tokens;
+	}
+
+	public void subtractDonationTokens(int tokens) {
+		this.donationTokens-=tokens;
 	}
 
 	public String getName() {
@@ -72,26 +76,24 @@ public class PlayerInfo {
 		if (toLevel == this.perkLevel) return;
 		if (toLevel < this.perkLevel) {
 			for (int level = this.perkLevel; level > toLevel; level--) {
-				removeGroup(this.player, level);
+				removeGroup(level);
 				this.perkLevel = level-1;
 			}
 		} else {
 			for (int level = this.perkLevel+1; level <= toLevel; level++) {
-				addGroup(this.player, level);
+				addGroup(level);
 				this.perkLevel = level;
 			}			
 		}
 	}
 
-	private void addGroup(Player player, int level) {
-		String command = String.format(addGroupCommand, player.getName(), level+1);
-		player.sendMessage(command);
+	private void addGroup(int level) {
+		String command = String.format(addGroupCommand, this.getName(), level+1);
 		executeCommand(command);
 	}
 
-	private void removeGroup(Player player, int level) {
-		String command = String.format(removeGroupCommand, player.getName(), level+1);
-		player.sendMessage(command);
+	private void removeGroup(int level) {
+		String command = String.format(removeGroupCommand, this.getName(), level+1);
 		executeCommand(command);
 	}
 
