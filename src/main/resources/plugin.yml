@@ -1,6 +1,6 @@
 name: DonationBoardPlugin
 main: se.fredsfursten.donationboardplugin.DonationBoardPlugin
-version: 0.5-DEV
+version: 0.6
 author: vanbrayne
 description: A Minecraft plugin for keeping scores of donations on a donation board
 commands:
