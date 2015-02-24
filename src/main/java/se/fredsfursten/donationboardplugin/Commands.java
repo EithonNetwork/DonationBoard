@@ -70,7 +70,7 @@ public class Commands {
 			return;
 		}
 
-		BoardController.get().load(DonationBoardPlugin.getDonationsStorageFile());
+		BoardController.get().load();
 	}
 
 	void saveCommand(Player player, String[] args)
@@ -81,7 +81,7 @@ public class Commands {
 			return;
 		}
 
-		BoardController.get().save(DonationBoardPlugin.getDonationsStorageFile());
+		BoardController.get().saveNow();
 	}
 
 	@SuppressWarnings("deprecation")

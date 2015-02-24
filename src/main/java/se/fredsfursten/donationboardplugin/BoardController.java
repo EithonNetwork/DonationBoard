@@ -40,15 +40,14 @@ public class BoardController {
 		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
-		load(DonationBoardPlugin.getDonationsStorageFile());
-		this._knownPlayers = new PlayerCollection<PlayerInfo>();
+		load();
 	}
 
 	void disable() {
 		changePerkLevel(0);
 		this._model = null;
 		this._view = null;
-		this._knownPlayers = null;
+		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 	}
 
 	void increaseLevel(Player player, Block block) {
@@ -66,15 +65,18 @@ public class BoardController {
 		int level = this._view.calculateLevel(block);
 		this._model.markOnlyThis(day, level, player.getName());
 		playerInfo.subtractDonationTokens(1);
+		if (day == 0) {
+			changePerkLevel();
+		}
+		delayedSave();
 		delayedRefresh();
-		player.sendMessage(String.format("You now have %d E-tokens.", playerInfo.getDonationTokens()));
 	}
 
 	public void initialize(Player player, Block clickedBlock) {
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._view = new BoardView(clickedBlock);
 		this._model.createFirstLineOfButtons();
-		save(DonationBoardPlugin.getDonationsStorageFile());
+		delayedSave();
 		delayedRefresh();
 	}
 
@@ -98,8 +100,18 @@ public class BoardController {
 		delayedRefresh();
 	}
 
-	public void save(File file)
+	private void delayedSave() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				saveNow();
+			}
+		});
+	}
+
+	public void saveNow()
 	{
+		File file = DonationBoardPlugin.getDonationsStorageFile();
 		BoardStorageModel storageModel = new BoardStorageModel(this._view, this._model, this._knownPlayers);
 		try {
 			SavingAndLoadingBinary.save(storageModel, file);
@@ -109,8 +121,9 @@ public class BoardController {
 		}
 	}
 
-	public void load(File file)
+	public void load()
 	{
+		File file = DonationBoardPlugin.getDonationsStorageFile();
 		if(!file.exists()) return;
 		BoardStorageModel storageModel;
 		try {
@@ -123,7 +136,10 @@ public class BoardController {
 		this._view = storageModel.getView();
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
-		changePerkLevel();
+		int toLevel = this._model.getDonationLevel(0);
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			playerInfo.demoteOrPromote(toLevel);
+		}
 		delayedRefresh();
 	}
 
@@ -145,26 +161,17 @@ public class BoardController {
 		if (this._knownPlayers == null) return;
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
-			Player player = playerInfo.getPlayer();
-			if (player != null) {
-				player.sendMessage(String.format("Your perk level has been changed to %d.", toLevel+1));
-			}
 		}	
 	}
 
 	public void register(Player player) {
-		int toLevel = this._model.getDonationLevel(0);
-		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
-		playerInfo.demoteOrPromote(toLevel);
-		this._knownPlayers.put(player, playerInfo);
-		player.sendMessage(String.format("You are currently at perk level %d.", toLevel+1));
+		getOrAddPlayerInfo(player);
 	}
 
 	public void donate(Player player, int tokens) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		playerInfo.addDonationTokens(tokens);
-		player.sendMessage(String.format("You now have %d E-tokens.", playerInfo.getDonationTokens()));
-		save(DonationBoardPlugin.getDonationsStorageFile());
+		delayedSave();
 	}
 
 	private PlayerInfo getOrAddPlayerInfo(Player player) {
@@ -172,6 +179,8 @@ public class BoardController {
 		if (playerInfo == null) {
 			playerInfo = new PlayerInfo(player);
 			this._knownPlayers.put(player, playerInfo);
+			int toLevel = this._model.getDonationLevel(0);
+			playerInfo.demoteOrPromote(toLevel);
 		}
 		return playerInfo;
 	}

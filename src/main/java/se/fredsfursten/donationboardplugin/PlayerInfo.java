@@ -45,10 +45,17 @@ public class PlayerInfo {
 
 	public void addDonationTokens(int tokens) {
 		this.donationTokens+=tokens;
+		sendMessage(String.format("You now have %d E-tokens.", getDonationTokens()));
 	}
 
 	public void subtractDonationTokens(int tokens) {
 		this.donationTokens-=tokens;
+		if (this.donationTokens < 0) this.donationTokens = 0;
+		if (this.donationTokens == 0) {
+			sendMessage("You have no E-tokens left.");
+		} else {
+			sendMessage(String.format("You have %d remaining E-tokens.", this.donationTokens));
+		}
 	}
 
 	public String getName() {
@@ -56,6 +63,7 @@ public class PlayerInfo {
 		{
 			Player player = this.getPlayer();
 			if (player == null) return null;
+			this.name = player.getName();
 		}
 		return this.name;
 	}
@@ -79,11 +87,20 @@ public class PlayerInfo {
 				removeGroup(level);
 				this.perkLevel = level-1;
 			}
+			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel+1));
 		} else {
 			for (int level = this.perkLevel+1; level <= toLevel; level++) {
 				addGroup(level);
 				this.perkLevel = level;
 			}			
+			sendMessage(String.format("Your perk level has been raised to %d.", toLevel+1));
+		}
+	}
+
+	private void sendMessage(String message) {
+		Player player = this.getPlayer();
+		if (player != null) {
+			player.sendMessage(message);
 		}
 	}
 
@@ -101,9 +118,9 @@ public class PlayerInfo {
 	{
 		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 	}
-	
+
 	public String toString()
 	{
-		return String.format("%s (%d tokens): %d perks", this.name, this.donationTokens, this.perkLevel);
+		return String.format("%s (%d tokens): %d perks", this.getName(), this.donationTokens, this.perkLevel+1);
 	}
 }
