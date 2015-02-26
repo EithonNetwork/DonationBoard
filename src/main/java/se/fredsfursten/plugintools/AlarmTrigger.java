@@ -9,20 +9,20 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
-public class Timer {
+public class AlarmTrigger {
 	private static final long TICK_LENGTH = 100L;
-	private static Timer singleton = null;
+	private static AlarmTrigger singleton = null;
 	private JavaPlugin _plugin = null;
 	private ArrayList<Alarm> _alarms = new ArrayList<Alarm>();
 	private boolean _isLocked = false;
 
-	private Timer() {
+	private AlarmTrigger() {
 	}
 
-	public static Timer get()
+	public static AlarmTrigger get()
 	{
 		if (singleton == null) {
-			singleton = new Timer();
+			singleton = new AlarmTrigger();
 		}
 		return singleton;
 	}

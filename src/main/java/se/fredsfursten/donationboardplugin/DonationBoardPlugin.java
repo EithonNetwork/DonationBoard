@@ -5,8 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,7 +16,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.PluginConfig;
-import se.fredsfursten.plugintools.Timer;
+import se.fredsfursten.plugintools.AlarmTrigger;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
@@ -38,13 +36,18 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
-		Timer.get().enable(this);
+		AlarmTrigger.get().enable(this);
 		setShiftTimer();
 	}
 
 	private void setShiftTimer() {
-		LocalDateTime alarmTime = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
-		Timer.get().setAlarm(alarmTime, new Runnable() {
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime alarmTime = null;
+		LocalDateTime alarmToday = LocalDateTime.of(LocalDate.now(), LocalTime.of(7,0,0));
+		LocalDateTime alarmTomorrow = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
+		if (LocalDateTime.now().isBefore(alarmToday)) alarmTime = alarmToday;
+		else alarmTime = alarmTomorrow;
+		AlarmTrigger.get().setAlarm(alarmTime, new Runnable() {
 			public void run() {
 				keepOnShifting();
 			}
@@ -60,7 +63,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	public void onDisable() {
 		BoardController.get().disable();
 		Commands.get().disable();
-		Timer.get().disable();
+		AlarmTrigger.get().disable();
 	}
 
 	public static File getDonationsStorageFile()

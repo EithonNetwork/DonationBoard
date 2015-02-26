@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>se.fredsfursten</groupId>
   <artifactId>DonationBoardPlugin</artifactId>
-  <version>0.7</version>
+  <version>0.7-DEV</version>
   <name>DonationBoardPlugin</name>
   <build>
       <plugins>
