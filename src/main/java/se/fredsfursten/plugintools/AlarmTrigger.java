@@ -14,7 +14,8 @@ public class AlarmTrigger {
 	private static AlarmTrigger singleton = null;
 	private JavaPlugin _plugin = null;
 	private ArrayList<Alarm> _alarms = new ArrayList<Alarm>();
-	private boolean _isLocked = false;
+	private int _enableCounter = 0;
+	private int _firstAlarmIndex= -1;
 
 	private AlarmTrigger() {
 	}
@@ -29,30 +30,39 @@ public class AlarmTrigger {
 
 	public void enable(JavaPlugin plugin){
 		this._plugin = plugin;
-		tick();
+		this._enableCounter++;
+		this._firstAlarmIndex = getFirstAlarmIndex();
+		tick(this._enableCounter);
 	}
 
 	public void disable() {
 		this._plugin = null;
 	}
-	
+
 	public void setAlarm(LocalDateTime time, Runnable task)
 	{
-		Alarm alarm = new Alarm(time, task);
-		this._alarms.add(alarm);
+		synchronized(this) {
+			Alarm alarm = new Alarm(time, task);
+			this._alarms.add(alarm);
+			Alarm firstAlarm = getFirstAlarm();
+			if ((firstAlarm == null) || firstAlarm.getTime().isAfter(time)) {
+				this._firstAlarmIndex = this._alarms.size()-1;	
+			}
+		}
 	}
-	
+
 	private boolean isEnabled()
 	{
 		return (this._plugin != null);
 	}
 
-	void tick() {
+	void tick(int enableCounter) {
 		if (!isEnabled()) return;
+		if (enableCounter < this._enableCounter) return;
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
 			public void run() {
-				tick();
+				tick(enableCounter);
 			}
 		}, TICK_LENGTH);
 		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
@@ -62,19 +72,45 @@ public class AlarmTrigger {
 		});
 	}
 
-	void checkAlarms() {
-		if (this._isLocked) return;
+	void checkAlarms() 
+	{
 		synchronized(this)
 		{
-			this._isLocked = true;
-			for (int i = 0; i < this._alarms.size(); i++) {
-				Alarm alarm = this._alarms.get(i);
-				if (alarm.maybeSetOff()) {
-					this._alarms.remove(i);
-					i--;
-				}			
+			Alarm firstAlarm = getFirstAlarm();
+			while ((firstAlarm != null) && firstAlarm.maybeSetOff()) {
+				this._plugin.getLogger().info(String.format("An alarm for %s was set off now (%s)", 
+						firstAlarm.getTime().toString(), LocalDateTime.now().toString()));
+				this._alarms.remove(this._firstAlarmIndex);
+				this._firstAlarmIndex = getFirstAlarmIndex();
+				firstAlarm = this._alarms.get(this._firstAlarmIndex);				
 			}
-			this._isLocked = false;
 		}
+	}
+
+	private int getFirstAlarmIndex()
+	{
+		if (this._alarms.size() < 1) return -1;
+		Alarm alarm = this._alarms.get(0);
+		LocalDateTime firstAlarmTime = alarm.getTime();
+		int firstAlarmIndex = 0;
+		for (int i = 1; i < this._alarms.size(); i++) {
+			alarm = this._alarms.get(i);
+			if (alarm.getTime().isBefore(firstAlarmTime)) {
+				firstAlarmIndex = i;
+				firstAlarmTime = alarm.getTime();
+			}		
+		}
+
+		return firstAlarmIndex;
+	}
+
+	private Alarm getFirstAlarm()
+	{
+		if (hasNoAlarms()) return null;
+		return this._alarms.get(this._firstAlarmIndex);
+	}
+
+	private boolean hasNoAlarms() {
+		return this._firstAlarmIndex == -1;
 	}
 }

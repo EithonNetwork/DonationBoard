@@ -14,6 +14,11 @@ class Alarm {
 		this._task = task;
 		this._hasBeenSetOff = false;
 	}
+	
+	LocalDateTime getTime()
+	{
+		return this._when;
+	}
 
 	boolean maybeSetOff() 
 	{

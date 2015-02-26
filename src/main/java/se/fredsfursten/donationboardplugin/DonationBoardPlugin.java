@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -37,7 +38,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
 		AlarmTrigger.get().enable(this);
-		setShiftTimer();
+		setShiftTimer();	
 	}
 
 	private void setShiftTimer() {
