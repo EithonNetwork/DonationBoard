@@ -138,7 +138,7 @@ public class BoardController {
 		this._view = storageModel.getView();
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
-		int toLevel = this._model.getDonationLevel(0);
+		int toLevel = this._model.getDonationLevel(1);
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
 		}
@@ -154,7 +154,7 @@ public class BoardController {
 
 	public void changePerkLevel() 
 	{
-		int toLevel = this._model.getDonationLevel(0);
+		int toLevel = this._model.getDonationLevel(1);
 		changePerkLevel(toLevel);	
 	}
 
@@ -180,7 +180,7 @@ public class BoardController {
 		if (playerInfo == null) {
 			playerInfo = new PlayerInfo(player);
 			this._knownPlayers.put(player, playerInfo);
-			int toLevel = this._model.getDonationLevel(0);
+			int toLevel = this._model.getDonationLevel(1);
 			playerInfo.demoteOrPromote(toLevel);
 		}
 		return playerInfo;
