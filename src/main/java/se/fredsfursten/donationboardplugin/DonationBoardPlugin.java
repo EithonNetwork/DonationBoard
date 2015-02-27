@@ -89,7 +89,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			BoardController.get().initialize(player, event.getClickedBlock());
 			break;
 		case WOOD_BUTTON:
-			BoardController.get().increaseLevel(player, event.getClickedBlock());
+			BoardController.get().increasePerkLevel(player, event.getClickedBlock());
 			break;
 		default:
 			break;
