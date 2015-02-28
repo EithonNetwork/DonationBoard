@@ -42,7 +42,6 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	}
 
 	private void setShiftTimer() {
-		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime alarmTime = null;
 		LocalDateTime alarmToday = LocalDateTime.of(LocalDate.now(), LocalTime.of(7,0,0));
 		LocalDateTime alarmTomorrow = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
@@ -89,7 +88,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			BoardController.get().initialize(player, event.getClickedBlock());
 			break;
 		case WOOD_BUTTON:
-			BoardController.get().increaseLevel(player, event.getClickedBlock());
+			BoardController.get().increasePerkLevel(player, event.getClickedBlock());
 			break;
 		default:
 			break;

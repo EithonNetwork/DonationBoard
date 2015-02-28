@@ -41,35 +41,26 @@ public class BoardController {
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
-		load();
+		loadNow();
 	}
 
 	void disable() {
-		changePerkLevel(0);
+		updatePerkLevel(0);
 		this._model = null;
 		this._view = null;
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		this._plugin = null;
 	}
 
-	void increaseLevel(Player player, Block block) {
-		boolean hasTokens = false;
-		PlayerInfo playerInfo = this._knownPlayers.get(player);
-		if (playerInfo != null) {
-			if (playerInfo.getDonationTokens() > 0) hasTokens = true;
-		}
-		if (!hasTokens) {
+	void increasePerkLevel(Player player, Block block) {
+		if (!playerHasTokens(player)) {
 			player.sendMessage("You must have E-tokens to raise the perk level.");
 			player.sendMessage("You get E-tokens by donating money at http://eithon.org/donate.");
 			return;
 		}
-		int day = this._view.calculateDay(block);
-		int level = this._view.calculateLevel(block);
-		this._model.markOnlyThis(day, level, player.getName());
-		playerInfo.subtractDonationTokens(1);
-		if (day == 0) {
-			changePerkLevel();
-		}
+		int day = markAsDonated(player, block);
+		decreasePlayerDonationTokens(player);
+		if (day == 1) updatePerkLevel();
 		delayedSave();
 		delayedRefresh();
 	}
@@ -82,33 +73,10 @@ public class BoardController {
 		delayedRefresh();
 	}
 
-	private void delayedRefresh() {
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
-			public void run() {
-				refreshNow();
-			}
-		});
-	}
-
-	void refreshNow() {
-		if (this._model == null) return;
-		this._view.refresh(this._model);
-	}
-
 	public void shiftLeft() {
 		this._model.shiftLeft();
-		changePerkLevel();
+		updatePerkLevel();
 		delayedRefresh();
-	}
-
-	private void delayedSave() {
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
-			public void run() {
-				saveNow();
-			}
-		});
 	}
 
 	public void saveNow()
@@ -118,12 +86,11 @@ public class BoardController {
 		try {
 			SavingAndLoadingBinary.save(storageModel, file);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public void load()
+	public void loadNow()
 	{
 		File file = DonationBoardPlugin.getDonationsStorageFile();
 		if(!file.exists()) return;
@@ -131,17 +98,13 @@ public class BoardController {
 		try {
 			storageModel = SavingAndLoadingBinary.load(file);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return;
 		}
 		this._view = storageModel.getView();
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
-		int toLevel = this._model.getDonationLevel(0);
-		for (PlayerInfo playerInfo : this._knownPlayers) {
-			playerInfo.demoteOrPromote(toLevel);
-		}
+		updatePerkLevel();
 		delayedRefresh();
 	}
 
@@ -150,19 +113,6 @@ public class BoardController {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			player.sendMessage(playerInfo.toString());
 		}
-	}
-
-	public void changePerkLevel() 
-	{
-		int toLevel = this._model.getDonationLevel(0);
-		changePerkLevel(toLevel);	
-	}
-
-	private void changePerkLevel(int toLevel) 
-	{
-		for (PlayerInfo playerInfo : this._knownPlayers) {
-			playerInfo.demoteOrPromote(toLevel);
-		}	
 	}
 
 	public void register(Player player) {
@@ -175,12 +125,69 @@ public class BoardController {
 		delayedSave();
 	}
 
+	void refreshNow() {
+		if (this._model == null) return;
+		this._view.refresh(this._model);
+	}
+
+	private boolean playerHasTokens(Player player)
+	{
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo != null) {
+			if (playerInfo.getDonationTokens() > 0) return true;
+		}
+		return false;
+	}
+
+	private void delayedRefresh() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				refreshNow();
+			}
+		});
+	}
+
+	private int markAsDonated(Player player, Block block) {
+		int day = this._view.calculateDay(block);
+		int level = this._view.calculateLevel(block);
+		this._model.markOnlyThis(day, level, player.getName());
+		return day;
+	}
+
+	private void decreasePlayerDonationTokens(Player player) {
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		playerInfo.subtractDonationTokens(1);
+	}
+
+	private void delayedSave() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				saveNow();
+			}
+		});
+	}
+
+	private void updatePerkLevel() 
+	{
+		int toLevel = this._model.getDonationLevel(1);
+		updatePerkLevel(toLevel);	
+	}
+
+	private void updatePerkLevel(int toLevel) 
+	{
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			playerInfo.demoteOrPromote(toLevel);
+		}	
+	}
+
 	private PlayerInfo getOrAddPlayerInfo(Player player) {
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo == null) {
 			playerInfo = new PlayerInfo(player);
 			this._knownPlayers.put(player, playerInfo);
-			int toLevel = this._model.getDonationLevel(0);
+			int toLevel = this._model.getDonationLevel(1);
 			playerInfo.demoteOrPromote(toLevel);
 		}
 		return playerInfo;

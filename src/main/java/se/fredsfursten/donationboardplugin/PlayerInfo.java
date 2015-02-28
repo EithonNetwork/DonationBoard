@@ -27,7 +27,7 @@ public class PlayerInfo {
 		this.name = player.getName();
 		this.id = player.getUniqueId();
 		this.donationTokens = 0;
-		this.perkLevel = -1;
+		this.perkLevel = 0;
 	}
 
 	public PlayerInfo(UUID uniqueId, int donationTokens)
@@ -36,7 +36,7 @@ public class PlayerInfo {
 		this.name = null;
 		this.id = uniqueId;
 		this.donationTokens = donationTokens;
-		this.perkLevel = -1;
+		this.perkLevel = 0;
 	}
 
 	public int getDonationTokens() {
@@ -87,13 +87,13 @@ public class PlayerInfo {
 				removeGroup(level);
 				this.perkLevel = level-1;
 			}
-			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel+1));
+			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
 		} else {
 			for (int level = this.perkLevel+1; level <= toLevel; level++) {
 				addGroup(level);
 				this.perkLevel = level;
 			}			
-			sendMessage(String.format("Your perk level has been raised to %d.", toLevel+1));
+			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
 		}
 	}
 
@@ -105,12 +105,12 @@ public class PlayerInfo {
 	}
 
 	private void addGroup(int level) {
-		String command = String.format(addGroupCommand, this.getName(), level+1);
+		String command = String.format(addGroupCommand, this.getName(), level);
 		executeCommand(command);
 	}
 
 	private void removeGroup(int level) {
-		String command = String.format(removeGroupCommand, this.getName(), level+1);
+		String command = String.format(removeGroupCommand, this.getName(), level);
 		executeCommand(command);
 	}
 
@@ -121,6 +121,6 @@ public class PlayerInfo {
 
 	public String toString()
 	{
-		return String.format("%s (%d tokens): %d perks", this.getName(), this.donationTokens, this.perkLevel+1);
+		return String.format("%s (%d tokens): %d perks", this.getName(), this.donationTokens, this.perkLevel);
 	}
 }

@@ -70,7 +70,7 @@ public class Commands {
 			return;
 		}
 
-		BoardController.get().load();
+		BoardController.get().loadNow();
 	}
 
 	void saveCommand(Player player, String[] args)

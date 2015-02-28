@@ -26,49 +26,78 @@ public class BoardModel {
 	}
 
 	public void createFirstLineOfButtons() {
-		for (int day = 0; day < this._numberOfDays; day++) {
-			initializeNewDay(day);
-		}
-	}
-
-	private void initializeNewDay(int day) {
-		for (int level = 0; level < this._numberOfLevels; level++) {
-			this._donations[day][level].setEmpty();
+		for (int dayIndex = 0; dayIndex < this._numberOfDays; dayIndex++) {
+			initializeNewDayInternal(dayIndex);
 		}
 	}
 
 	public void shiftLeft() {
 		// Copy values from right
-		for (int day = 0; day < this._numberOfDays-1; day++) {
-			for (int level = 0; level < this._numberOfLevels; level++) {
-				this._donations[day][level].copy(this._donations[day+1][level]);
+		for (int dayIndex = 0; dayIndex < this._numberOfDays-1; dayIndex++) {
+			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+				this._donations[dayIndex][levelIndex].copy(this._donations[dayIndex+1][levelIndex]);
 			}
 		}			
 		// Initialize the last day
-		initializeNewDay(this._numberOfDays-1);
+		initializeNewDayInternal(this._numberOfDays-1);
 	}
 
 	public BoardModel clone() {
-		BoardModel clone = new BoardModel(this._numberOfDays, this._numberOfLevels);
-		for (int day = 0; day < this._numberOfDays ; day++) {
-			for (int level = 0; level < this._numberOfLevels; level++) {
-				clone._donations[day][level].copy(this._donations[day][level]);
+		BoardModel newClone = new BoardModel(this._numberOfDays, this._numberOfLevels);
+		for (int dayIndex = 0; dayIndex < this._numberOfDays ; dayIndex++) {
+			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+				newClone._donations[dayIndex][levelIndex].copy(this._donations[dayIndex][levelIndex]);
 			}
 		}
-		return clone;
+		return newClone;
 	}
 
 	public void markOnlyThis(int day, int level, String playerName) {
-		if (!isInsideBoard(day, level)) return;
-		if (playerName == null)
-		{
-			this._donations[day][level].setEmpty();		
-		} else {
-			this._donations[day][level].setDonation(playerName);			
+		markOnlyThisInternal(day-1, level-1, playerName);
+	}
+
+	public Donation getDonationInfo(int day, int level) {
+		return getDonationInfoInternal(day-1, level-1);
+	}
+
+	public int getDonationLevel(int day) {
+		return getDonationLevelInternal(day-1)+1;
+	}
+
+	public void print(Player player) {
+		for (int dayIndex = 0; dayIndex < this._numberOfDays; dayIndex++) {
+			int day = dayIndex+1;
+			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+				int level = levelIndex+1;
+				String message = String.format("%d,%d: %s", day, level, this._donations[dayIndex][levelIndex].toString());
+				if (player != null) player.sendMessage(message);
+				else System.out.println(message);
+			}
 		}
 	}
 
-	public boolean isInsideBoard(int day, int level) {
+	private void initializeNewDayInternal(int dayIndex) {
+		for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+			this._donations[dayIndex][levelIndex].setEmpty();
+		}
+	}
+
+	private void markOnlyThisInternal(int dayIndex, int levelIndex, String playerName) {
+		if (!isInsideBoardInternal(dayIndex, levelIndex)) return;
+		if (playerName == null)
+		{
+			this._donations[dayIndex][levelIndex].setEmpty();		
+		} else {
+			this._donations[dayIndex][levelIndex].setDonation(playerName);			
+		}
+	}
+
+	private Donation getDonationInfoInternal(int dayIndex, int levelIndex) {
+		if (!isInsideBoardInternal(dayIndex, levelIndex)) return null;
+		return this._donations[dayIndex][levelIndex];
+	}
+
+	private boolean isInsideBoardInternal(int day, int level) {
 		if (day < 0) return false;
 		if (day >= this._numberOfDays) return false;
 		if (level < 0) return false;
@@ -76,40 +105,18 @@ public class BoardModel {
 		return true;
 	}
 
-	public boolean isSame(BoardModel board, int day, int level) {
-		if (!isInsideBoard(day, level)) {
-			if ((board == null) || !board.isInsideBoard(day, level)) return true;
-		} else if ((board == null) || !board.isInsideBoard(day, level)) return false;
-		return this._donations[day][level].isSame(board._donations[day][level]);
-	}
-
-	public Donation getDonationInfo(int day, int level) {
-		if (!isInsideBoard(day, level)) return null;
-		return this._donations[day][level];
-	}
-
 	private void resetBoard() {
-		for (int day = 0; day < this._numberOfDays; day++) {
-			for (int level = 0; level < this._numberOfLevels; level++) {
-				this._donations[day][level] = new Donation();
+		for (int dayIndex = 0; dayIndex < this._numberOfDays; dayIndex++) {
+			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+				this._donations[dayIndex][levelIndex] = new Donation();
 			}
 		}
 	}
 
-	public void print(Player player) {
-		for (int day = 0; day < this._numberOfDays; day++) {
-			for (int level = 0; level < this._numberOfLevels; level++) {
-				String message = String.format("%d,%d: %s", day, level, this._donations[day][level].toString());
-				if (player != null) player.sendMessage(message);
-				else System.out.println(message);
-			}
-		}
-	}
-
-	public int getDonationLevel(int day) {
+	private int getDonationLevelInternal(int dayIndex) {
 		int donationLevel = -1;
 		for (int level = 0; level < this._numberOfLevels; level++) {
-			if (!this._donations[day][level].isDonation()) break;
+			if (!this._donations[dayIndex][level].isDonation()) break;
 			donationLevel = level;
 		}
 		return donationLevel;

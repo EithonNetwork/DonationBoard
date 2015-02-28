@@ -38,7 +38,7 @@ class BoardStorageModel implements Serializable {
 	}
 
 	public BoardStorageModel(BoardView view, BoardModel model, PlayerCollection<PlayerInfo> knownPlayers) {
-		initialize(view.getBlock(0,0), view.getStepX(), view.getStepZ(), model);
+		initialize(view.getBlock(1,1), view.getStepX(), view.getStepZ(), model);
 		this.worldId = view.getWorld().getUID();
 		this.donators = new ArrayList<PlayerStorageModel>();
 		for (PlayerInfo playerInfo : knownPlayers) {
