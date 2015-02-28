@@ -1,11 +1,9 @@
 package se.fredsfursten.donationboardplugin;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
-import org.bukkit.entity.Player;
 
 class BoardView {
 	private Block _startBlock;

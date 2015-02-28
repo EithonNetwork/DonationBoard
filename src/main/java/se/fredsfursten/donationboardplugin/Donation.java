@@ -3,32 +3,32 @@ package se.fredsfursten.donationboardplugin;
 import org.bukkit.entity.Player;
 
 class Donation {
-	private String playerName;
+	private String _playerName;
 
 	public Donation()
 	{
-		this.playerName = null;
+		this._playerName = null;
 	}
 	
 	public void setEmpty()
 	{
-		this.playerName = null;
+		this._playerName = null;
 	}
 
 	public void setDonation(Player player)
 	{
-		this.playerName = player.getName();
+		this._playerName = player.getName();
 
 	}
 
 	public void setDonation(String playerName)
 	{
-		this.playerName = playerName;
+		this._playerName = playerName;
 
 	}
 
 	boolean isEmpty() {
-		return this.playerName == null;
+		return this._playerName == null;
 	}
 
 	boolean isDonation() {
@@ -36,7 +36,7 @@ class Donation {
 	}
 
 	String getPlayerName() {
-		return this.playerName;
+		return this._playerName;
 	}
 	
 	public String toString() {
@@ -44,10 +44,10 @@ class Donation {
 	}
 
 	public boolean isSame(Donation donationInfo) {
-		return this.playerName == donationInfo.playerName;
+		return this._playerName == donationInfo._playerName;
 	}
 
 	public void copy(Donation from) {
-		this.playerName = from.playerName;
+		this._playerName = from._playerName;
 	}
 }

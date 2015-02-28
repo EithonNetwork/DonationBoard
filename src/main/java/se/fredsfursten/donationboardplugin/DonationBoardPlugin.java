@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,10 +13,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import se.fredsfursten.plugintools.PluginConfig;
 import se.fredsfursten.plugintools.AlarmTrigger;
+import se.fredsfursten.plugintools.PluginConfig;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
@@ -93,6 +93,13 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		default:
 			break;
 		}
+	}
+
+
+	@EventHandler
+	public void onPlayerJoinEvent(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		BoardController.get().playerJoined(player);
 	}
 
 	@Override

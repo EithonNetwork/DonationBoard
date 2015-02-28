@@ -43,6 +43,11 @@ public class BoardController {
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		loadNow();
 	}
+	
+	int getMaxPerkLevel()
+	{
+		return numberOfLevels;
+	}
 
 	void disable() {
 		updatePerkLevel(0);
@@ -116,11 +121,11 @@ public class BoardController {
 	}
 
 	public void register(Player player) {
-		getOrAddPlayerInfo(player);
+		getOrAddPlayerInfo(player, true);
 	}
 
 	public void donate(Player player, int tokens) {
-		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player, true);
 		playerInfo.addDonationTokens(tokens);
 		delayedSave();
 	}
@@ -178,18 +183,22 @@ public class BoardController {
 	private void updatePerkLevel(int toLevel) 
 	{
 		for (PlayerInfo playerInfo : this._knownPlayers) {
-			playerInfo.demoteOrPromote(toLevel);
+			playerInfo.demoteOrPromote(toLevel, false);
 		}	
 	}
 
-	private PlayerInfo getOrAddPlayerInfo(Player player) {
+	private PlayerInfo getOrAddPlayerInfo(Player player, boolean shouldGetPerks) {
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo == null) {
-			playerInfo = new PlayerInfo(player);
+			playerInfo = new PlayerInfo(player, shouldGetPerks);
 			this._knownPlayers.put(player, playerInfo);
 			int toLevel = this._model.getDonationLevel(1);
-			playerInfo.demoteOrPromote(toLevel);
+			playerInfo.demoteOrPromote(toLevel, true);
 		}
 		return playerInfo;
+	}
+
+	public void playerJoined(Player player) {
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player, false);
 	}
 }
