@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
@@ -79,9 +81,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		if (mandatoryWorld != null) {
-			if(!player.getWorld().getName().equalsIgnoreCase(mandatoryWorld)) return;
-		}
+		if (!isInMandatoryWorld(player.getWorld())) return;
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 		switch (event.getClickedBlock().getType()) {
 		case STONE_BUTTON:
@@ -95,11 +95,17 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		}
 	}
 
-
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		BoardController.get().playerJoined(player);
+	}
+
+	@EventHandler
+	public void onPlayerTeleport(PlayerTeleportEvent event) {
+		if (!isInMandatoryWorld(event.getTo().getWorld())) return;
+		Player player = event.getPlayer();
+		BoardController.get().playerTeleportedToBoard(player, event.getFrom());
 	}
 
 	@Override
@@ -136,5 +142,11 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			}
 		}
 		return true;
+	}
+
+	public static boolean isInMandatoryWorld(World world) 
+	{
+		if (mandatoryWorld == null) return true;
+		return world.getName().equalsIgnoreCase(mandatoryWorld);
 	}
 }

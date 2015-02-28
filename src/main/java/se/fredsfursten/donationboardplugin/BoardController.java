@@ -1,13 +1,19 @@
 package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalUnit;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import se.fredsfursten.plugintools.AlarmTrigger;
 import se.fredsfursten.plugintools.PlayerCollection;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
@@ -171,6 +177,18 @@ public class BoardController {
 			playerInfo.setIsOnTheBoard(true);
 		}
 		maybePromotePlayer(player);
+	}
+
+	public void playerTeleportedToBoard(Player player, Location from) 
+	{
+		LocalDateTime alarm = LocalDateTime.now().plusSeconds(20);
+		AlarmTrigger.get().setAlarm(alarm, new Runnable() {
+			public void run() {
+				if (DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) {
+					register(player);
+				}
+			}
+		});	
 	}
 
 	void refreshNow() {
