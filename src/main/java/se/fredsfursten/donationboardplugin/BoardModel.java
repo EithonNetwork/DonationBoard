@@ -27,7 +27,7 @@ public class BoardModel {
 
 	public void createFirstLineOfButtons() {
 		for (int dayIndex = 0; dayIndex < this._numberOfDays; dayIndex++) {
-			initializeNewDay(dayIndex);
+			initializeNewDayInternal(dayIndex);
 		}
 	}
 
@@ -39,17 +39,17 @@ public class BoardModel {
 			}
 		}			
 		// Initialize the last day
-		initializeNewDay(this._numberOfDays-1);
+		initializeNewDayInternal(this._numberOfDays-1);
 	}
 
 	public BoardModel clone() {
-		BoardModel clone = new BoardModel(this._numberOfDays, this._numberOfLevels);
+		BoardModel newClone = new BoardModel(this._numberOfDays, this._numberOfLevels);
 		for (int dayIndex = 0; dayIndex < this._numberOfDays ; dayIndex++) {
 			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
-				clone._donations[dayIndex][levelIndex].copy(this._donations[dayIndex][levelIndex]);
+				newClone._donations[dayIndex][levelIndex].copy(this._donations[dayIndex][levelIndex]);
 			}
 		}
-		return clone;
+		return newClone;
 	}
 
 	public void markOnlyThis(int day, int level, String playerName) {
@@ -76,7 +76,7 @@ public class BoardModel {
 		}
 	}
 
-	private void initializeNewDay(int dayIndex) {
+	private void initializeNewDayInternal(int dayIndex) {
 		for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
 			this._donations[dayIndex][levelIndex].setEmpty();
 		}
@@ -106,9 +106,9 @@ public class BoardModel {
 	}
 
 	private void resetBoard() {
-		for (int day = 0; day < this._numberOfDays; day++) {
-			for (int level = 0; level < this._numberOfLevels; level++) {
-				this._donations[day][level] = new Donation();
+		for (int dayIndex = 0; dayIndex < this._numberOfDays; dayIndex++) {
+			for (int levelIndex = 0; levelIndex < this._numberOfLevels; levelIndex++) {
+				this._donations[dayIndex][levelIndex] = new Donation();
 			}
 		}
 	}

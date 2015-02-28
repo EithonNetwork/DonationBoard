@@ -45,7 +45,7 @@ public class BoardController {
 	}
 
 	void disable() {
-		changePerkLevel(0);
+		updatePerkLevel(0);
 		this._model = null;
 		this._view = null;
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
@@ -60,7 +60,7 @@ public class BoardController {
 		}
 		int day = markAsDonated(player, block);
 		decreasePlayerDonationTokens(player);
-		if (day == 1) changePerkLevel();
+		if (day == 1) updatePerkLevel();
 		delayedSave();
 		delayedRefresh();
 	}
@@ -75,7 +75,7 @@ public class BoardController {
 
 	public void shiftLeft() {
 		this._model.shiftLeft();
-		changePerkLevel();
+		updatePerkLevel();
 		delayedRefresh();
 	}
 
@@ -104,7 +104,7 @@ public class BoardController {
 		this._view = storageModel.getView();
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
-		changePerkLevel();
+		updatePerkLevel();
 		delayedRefresh();
 	}
 
@@ -113,12 +113,6 @@ public class BoardController {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			player.sendMessage(playerInfo.toString());
 		}
-	}
-
-	public void changePerkLevel() 
-	{
-		int toLevel = this._model.getDonationLevel(1);
-		changePerkLevel(toLevel);	
 	}
 
 	public void register(Player player) {
@@ -175,7 +169,13 @@ public class BoardController {
 		});
 	}
 
-	private void changePerkLevel(int toLevel) 
+	private void updatePerkLevel() 
+	{
+		int toLevel = this._model.getDonationLevel(1);
+		updatePerkLevel(toLevel);	
+	}
+
+	private void updatePerkLevel(int toLevel) 
 	{
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.demoteOrPromote(toLevel);
