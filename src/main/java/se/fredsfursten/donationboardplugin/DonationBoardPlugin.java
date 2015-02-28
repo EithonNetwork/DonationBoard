@@ -53,7 +53,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			}
 		});
 	}
-	
+
 	protected void keepOnShifting() {
 		BoardController.get().shiftLeft();
 		setShiftTimer();
@@ -104,33 +104,36 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player)) {
-			sender.sendMessage("You must be a player!");
-			return false;
-		}
 		if (args.length < 1) {
 			sender.sendMessage("Incomplete command...");
 			return false;
 		}
-
-		Player player = (Player) sender;
-
 		String command = args[0].toLowerCase();
-		if (command.equals("shift")) {
-			Commands.get().shiftCommand(player, args);
-		} else if (command.equals("print")) {
-			Commands.get().printCommand(player, args);
-		} else if (command.equals("load")) {
-			Commands.get().loadCommand(player, args);
-		} else if (command.equals("save")) {
-			Commands.get().saveCommand(player, args);
-		} else if (command.equals("register")) {
-			Commands.get().registerCommand(player, args);
-		} else if (command.equals("donate")) {
-			Commands.get().donateCommand(player, args);
+		if (command.equals("donate")) {
+			Commands.get().donateCommand(sender, args);
 		} else {
-			sender.sendMessage("Could not understand command.");
-			return false;
+
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("You must be a player!");
+				return false;
+			}
+
+			Player player = (Player) sender;
+
+			if (command.equals("shift")) {
+				Commands.get().shiftCommand(player, args);
+			} else if (command.equals("print")) {
+				Commands.get().printCommand(player, args);
+			} else if (command.equals("load")) {
+				Commands.get().loadCommand(player, args);
+			} else if (command.equals("save")) {
+				Commands.get().saveCommand(player, args);
+			} else if (command.equals("register")) {
+				Commands.get().registerCommand(player, args);
+			} else {
+				sender.sendMessage("Could not understand command.");
+				return false;
+			}
 		}
 		return true;
 	}

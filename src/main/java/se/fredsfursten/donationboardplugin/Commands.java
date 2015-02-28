@@ -1,6 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -80,7 +81,7 @@ public class Commands {
 	@SuppressWarnings("deprecation")
 	void registerCommand(Player player, String[] args)
 	{
-		if (!verifyPermission(player, "donationboard.donate")) return;
+		if (!verifyPermission(player, "donationboard.register")) return;
 		if (!arrayLengthIsWithinInterval(args, 1, 2)) {
 			player.sendMessage(REGISTER_COMMAND);
 			return;
@@ -95,25 +96,28 @@ public class Commands {
 	}
 
 	@SuppressWarnings("deprecation")
-	void donateCommand(Player player, String[] args)
+	public void donateCommand(CommandSender sender, String[] args)
 	{
-		if (!verifyPermission(player, "donationboard.donate")) return;
+		if (sender instanceof Player) {
+			Player player = (Player) sender;
+			if (!verifyPermission(player, "donationboard.donate")) return;
+		}
 		if (!arrayLengthIsWithinInterval(args, 3, 3)) {
-			player.sendMessage(DONATE_COMMAND);
+			sender.sendMessage(DONATE_COMMAND);
 			return;
 		}
 
 		Player donatePlayer  = Bukkit.getPlayer(args[1]);
 		if (donatePlayer == null) {
-			player.sendMessage(String.format("Unknown player: %s", args[1]));
+			sender.sendMessage(String.format("Unknown player: %s", args[1]));
 			return;
 		}
-		
+
 		int tokens = 0;
 		try {
 			tokens = Integer.parseUnsignedInt(args[2]);
 		} catch (Exception e) {
-			player.sendMessage(String.format("Number of tokens could not be understood: %s", args[2]));
+			sender.sendMessage(String.format("Number of tokens could not be understood: %s", args[2]));
 			return;
 		}
 
