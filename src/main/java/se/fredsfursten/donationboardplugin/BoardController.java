@@ -145,7 +145,8 @@ public class BoardController {
 	}
 
 	public void register(Player player) {
-		getOrAddPlayerInfo(player);
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+		playerInfo.markAsHasBeenToBoard();
 		maybePromotePlayer(player);
 	}
 

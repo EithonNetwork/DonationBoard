@@ -15,6 +15,7 @@ public class PlayerInfo {
 	private int _donationTokens;
 	private int _perkLevel;
 	private boolean _isOnTheBoard;
+	private boolean _hasBeenToBoard;
 
 	static
 	{
@@ -29,6 +30,7 @@ public class PlayerInfo {
 		this._id = player.getUniqueId();
 		this._donationTokens = 0;
 		this._perkLevel = 0;
+		this._hasBeenToBoard = false;
 	}
 
 	public PlayerInfo(UUID uniqueId, int donationTokens)
@@ -38,6 +40,7 @@ public class PlayerInfo {
 		this._id = uniqueId;
 		this._donationTokens = donationTokens;
 		this._perkLevel = 0;
+		this._hasBeenToBoard = false;
 	}
 
 	public int getDonationTokens() {
@@ -45,7 +48,7 @@ public class PlayerInfo {
 	}
 	
 	public boolean shouldGetPerks() {
-		return (this._donationTokens > 0) || this._isOnTheBoard;
+		return (this._donationTokens > 0) || this._isOnTheBoard || this._hasBeenToBoard;
 	}
 
 	public void addDonationTokens(int tokens) {
@@ -104,6 +107,11 @@ public class PlayerInfo {
 	public void setIsOnTheBoard(boolean isOnTheBoard)
 	{
 		this._isOnTheBoard = isOnTheBoard;
+	}
+	
+	public void markAsHasBeenToBoard()
+	{
+		this._hasBeenToBoard = true;
 	}
 
 	private void promote(int toLevel) {
