@@ -29,5 +29,6 @@
 	</classpathentry>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/Lars/workspace/bukkit-1.8-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Lars/workspace/TitleAPI.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

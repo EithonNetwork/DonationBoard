@@ -13,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import com.connorlinfoot.titleapi.TitleAPI;
+
 import se.fredsfursten.plugintools.AlarmTrigger;
 import se.fredsfursten.plugintools.PlayerCollection;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
@@ -148,6 +150,7 @@ public class BoardController {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			player.sendMessage(playerInfo.toString());
 		}
+		TitleAPI.sendTitle(player, 100, 100, 100, "Title", "Subtitle");
 	}
 
 	public void register(Player player) {
