@@ -1,5 +1,6 @@
 package se.fredsfursten.donationboardplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 class Donation {
@@ -37,6 +38,13 @@ class Donation {
 
 	String getPlayerName() {
 		return this._playerName;
+	}
+	
+	@SuppressWarnings("deprecation")
+	Player getPlayer()
+	{
+		if (this._playerName == null) return null;
+		return Bukkit.getPlayer(this._playerName);
 	}
 	
 	public String toString() {

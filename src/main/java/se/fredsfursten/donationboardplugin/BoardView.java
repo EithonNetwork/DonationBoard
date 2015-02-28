@@ -5,6 +5,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 
+import se.fredsfursten.plugintools.PlayerCollection;
+
 class BoardView {
 	private Block _startBlock;
 	int _stepX;

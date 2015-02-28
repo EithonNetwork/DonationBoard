@@ -14,7 +14,7 @@ public class PlayerInfo {
 	private Player _player;
 	private int _donationTokens;
 	private int _perkLevel;
-	private boolean _shouldGetPerks;
+	private boolean _isOnTheBoard;
 
 	static
 	{
@@ -22,14 +22,13 @@ public class PlayerInfo {
 		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
 	}
 
-	public PlayerInfo(Player player, boolean shouldGetPerks)
+	public PlayerInfo(Player player)
 	{
 		this._player = player;
 		this._name = player.getName();
 		this._id = player.getUniqueId();
 		this._donationTokens = 0;
 		this._perkLevel = 0;
-		this._shouldGetPerks = shouldGetPerks;
 	}
 
 	public PlayerInfo(UUID uniqueId, int donationTokens)
@@ -39,21 +38,27 @@ public class PlayerInfo {
 		this._id = uniqueId;
 		this._donationTokens = donationTokens;
 		this._perkLevel = 0;
-		this._shouldGetPerks = donationTokens > 0;
 	}
 
 	public int getDonationTokens() {
 		return this._donationTokens;
 	}
+	
+	public boolean shouldGetPerks() {
+		return (this._donationTokens > 0) || this._isOnTheBoard;
+	}
 
 	public void addDonationTokens(int tokens) {
 		this._donationTokens+=tokens;
 		sendMessage(String.format("You now have %d E-tokens.", getDonationTokens()));
-		if (this._donationTokens > 0) this._shouldGetPerks = true;
 	}
 
-	public void subtractDonationTokens(int tokens) {
-		this._donationTokens-=tokens;
+	public void usedOneToken() {
+		if (this._donationTokens < 0) {
+			this._donationTokens = 0;
+			return;
+		}			
+		this._donationTokens--;
 		if (this._donationTokens < 0) this._donationTokens = 0;
 		if (this._donationTokens == 0) {
 			sendMessage("You have no E-tokens left.");
@@ -84,20 +89,25 @@ public class PlayerInfo {
 		return this._id;
 	}
 
-	public void demoteOrPromote(int toLevel, boolean force) {
+	public void demoteOrPromote(int toLevel, boolean reset) {
 		int currentPerkLevel = this._perkLevel;
-		if (force) resetPerkLevel(true);
+		if (reset) resetPerkLevel(true);
 		if (toLevel < currentPerkLevel) {
 			demote(toLevel);
 			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
-		} else if ((toLevel > currentPerkLevel) && this._shouldGetPerks) {
+		} else if ((toLevel > currentPerkLevel) && shouldGetPerks()) {
 			promote(toLevel);
 			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
 		}
 	}
+	
+	public void setIsOnTheBoard(boolean isOnTheBoard)
+	{
+		this._isOnTheBoard = isOnTheBoard;
+	}
 
 	private void promote(int toLevel) {
-		if (!this._shouldGetPerks) return;
+		if (!shouldGetPerks()) return;
 		for (int level = this._perkLevel + 1; level <= toLevel; level++) {
 			addGroup(level);
 		}
@@ -140,6 +150,6 @@ public class PlayerInfo {
 
 	public String toString()
 	{
-		return String.format("%s (%d tokens): %d perks", this.getName(), this._donationTokens, this._perkLevel);
+		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._donationTokens, this._perkLevel);
 	}
 }

@@ -43,7 +43,7 @@ public class BoardController {
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		loadNow();
 	}
-	
+
 	int getMaxPerkLevel()
 	{
 		return numberOfLevels;
@@ -65,7 +65,6 @@ public class BoardController {
 		}
 		int day = markAsDonated(player, block);
 		decreasePlayerDonationTokens(player);
-		if (day == 1) updatePerkLevel();
 		delayedSave();
 		delayedRefresh();
 	}
@@ -80,7 +79,6 @@ public class BoardController {
 
 	public void shiftLeft() {
 		this._model.shiftLeft();
-		updatePerkLevel();
 		delayedRefresh();
 	}
 
@@ -109,9 +107,35 @@ public class BoardController {
 		this._view = storageModel.getView();
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
-		updatePerkLevel();
 		delayedRefresh();
 	}
+
+	private void FindDonators() {
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			playerInfo.setIsOnTheBoard(false);
+		}
+		for (int day = 0; day <= BoardController.numberOfDays; day++) {
+			for (int level = 0; level <= BoardController.numberOfLevels; level++) {
+				Donation donation = this._model.getDonationInfo(day, level);
+				if (donation == null) continue;
+				Player player = donation.getPlayer();
+				if (player == null) continue;
+				PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+				playerInfo.setIsOnTheBoard(true);
+			}
+		}
+	}	
+
+	private boolean isDonator(Player player) {
+		for (int day = 0; day <= BoardController.numberOfDays; day++) {
+			for (int level = 0; level <= BoardController.numberOfLevels; level++) {
+				Donation donation = this._model.getDonationInfo(day, level);
+				if (donation == null) continue;
+				if (donation.getPlayer() == player) return true;
+			}
+		}
+		return false;
+	}	
 
 	public void print(Player player) {
 		//this._model.print(player);
@@ -121,18 +145,44 @@ public class BoardController {
 	}
 
 	public void register(Player player) {
-		getOrAddPlayerInfo(player, true);
+		getOrAddPlayerInfo(player);
+		maybePromotePlayer(player);
 	}
 
 	public void donate(Player player, int tokens) {
-		PlayerInfo playerInfo = getOrAddPlayerInfo(player, true);
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		playerInfo.addDonationTokens(tokens);
+		maybePromotePlayer(player);
 		delayedSave();
+	}
+
+	private void maybePromotePlayer(Player player) {
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+		if (playerInfo.shouldGetPerks()) {
+			int toLevel = this._model.getDonationLevel(1);
+			playerInfo.demoteOrPromote(toLevel, true);
+		}
+	}
+
+	public void playerJoined(Player player) {
+		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
+		if (isDonator(player)) {
+			playerInfo.setIsOnTheBoard(true);
+		}
+		maybePromotePlayer(player);
 	}
 
 	void refreshNow() {
 		if (this._model == null) return;
 		this._view.refresh(this._model);
+		FindDonators();
+		updatePerkLevel();
+	}
+
+	private void updatePerkLevel() 
+	{
+		int toLevel = this._model.getDonationLevel(1);
+		updatePerkLevel(toLevel);	
 	}
 
 	private boolean playerHasTokens(Player player)
@@ -162,7 +212,7 @@ public class BoardController {
 
 	private void decreasePlayerDonationTokens(Player player) {
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
-		playerInfo.subtractDonationTokens(1);
+		playerInfo.usedOneToken();
 	}
 
 	private void delayedSave() {
@@ -174,12 +224,6 @@ public class BoardController {
 		});
 	}
 
-	private void updatePerkLevel() 
-	{
-		int toLevel = this._model.getDonationLevel(1);
-		updatePerkLevel(toLevel);	
-	}
-
 	private void updatePerkLevel(int toLevel) 
 	{
 		for (PlayerInfo playerInfo : this._knownPlayers) {
@@ -187,18 +231,12 @@ public class BoardController {
 		}	
 	}
 
-	private PlayerInfo getOrAddPlayerInfo(Player player, boolean shouldGetPerks) {
+	private PlayerInfo getOrAddPlayerInfo(Player player) {
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo == null) {
-			playerInfo = new PlayerInfo(player, shouldGetPerks);
+			playerInfo = new PlayerInfo(player);
 			this._knownPlayers.put(player, playerInfo);
-			int toLevel = this._model.getDonationLevel(1);
-			playerInfo.demoteOrPromote(toLevel, true);
 		}
 		return playerInfo;
-	}
-
-	public void playerJoined(Player player) {
-		PlayerInfo playerInfo = getOrAddPlayerInfo(player, false);
 	}
 }
