@@ -2,8 +2,6 @@ package se.fredsfursten.plugintools;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,12 +55,13 @@ public class AlarmTrigger {
 	}
 
 	void tick(int enableCounter) {
+		final int currentCounter = enableCounter;
 		if (!isEnabled()) return;
 		if (enableCounter < this._enableCounter) return;
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
 			public void run() {
-				tick(enableCounter);
+				tick(currentCounter);
 			}
 		}, TICK_LENGTH);
 		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
