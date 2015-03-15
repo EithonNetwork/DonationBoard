@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 1.1.1 (2015-03-15)
+
+* BUG: Restart of server could result in exception.
+
 ### 1.1 (2015-03-15)
 
 * NEW: Added "/donationboard goto" command to teleport to the board

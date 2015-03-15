@@ -2,8 +2,6 @@ package se.fredsfursten.donationboardplugin;
 
 import org.bukkit.entity.Player;
 
-import se.fredsfursten.plugintools.PlayerCollection;
-
 public class BoardModel {
 	public int _numberOfDays;
 	public int _numberOfLevels;

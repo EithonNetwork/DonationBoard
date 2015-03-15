@@ -1,10 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.TemporalUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -99,6 +96,7 @@ public class BoardController {
 
 	public void saveNow()
 	{
+		if (this._view == null) return;
 		File file = DonationBoardPlugin.getDonationsStorageFile();
 		BoardStorageModel storageModel = new BoardStorageModel(this._view, this._model, this._knownPlayers);
 		try {

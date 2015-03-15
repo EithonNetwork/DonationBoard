@@ -2,13 +2,11 @@ package se.fredsfursten.donationboardplugin;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 
 import se.fredsfursten.plugintools.PlayerCollection;
 
@@ -29,10 +27,10 @@ class BoardStorageModel implements Serializable {
 	}
 
 	private void initialize(Block block, int stepX, int stepZ, BoardModel model) {
-		this.worldId = block.getWorld().getUID();
-		this.blockX = block.getX();
-		this.blockY = block.getY();
-		this.blockZ = block.getZ();
+		this.worldId = block == null ? null : block.getWorld().getUID();
+		this.blockX = block == null ? 0 : block.getX();
+		this.blockY = block == null ? 0 : block.getY();
+		this.blockZ = block == null ? 0 : block.getZ();
 		this.stepX = stepX;
 		this.stepZ = stepZ;
 	}
@@ -67,7 +65,9 @@ class BoardStorageModel implements Serializable {
 
 	public BoardView getView()
 	{
-		return new BoardView(getBlock());
+		Block block = getBlock();
+		if (block == null) return null;
+		return new BoardView(block);
 	}
 
 	public PlayerCollection<PlayerInfo> getKnownPlayers()
