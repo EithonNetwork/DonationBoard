@@ -1,5 +1,6 @@
 package se.fredsfursten.donationboardplugin;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -124,5 +125,9 @@ class BoardView {
 		Skull skull = (Skull)block.getState();
 		skull.setOwner(playerName);
 		skull.update();
+	}
+
+	public Location getLocation() {
+		return this._startBlock.getLocation();
 	}
 }

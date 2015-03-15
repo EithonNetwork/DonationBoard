@@ -1,5 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,6 +14,7 @@ public class Commands {
 	private static final String LOAD_COMMAND = "/donationboard load";
 	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String REGISTER_COMMAND = "/donationboard register <player>";
+	private static final String GOTO_COMMAND = "/donationboard goto";
 	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens>";
 
 	private JavaPlugin _plugin = null;
@@ -95,6 +98,17 @@ public class Commands {
 		BoardController.get().register(registerPlayer);
 	}
 
+	void gotoCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.register")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(GOTO_COMMAND);
+			return;
+		}
+
+		player.teleport(BoardController.get().getBoardLocation());
+	}
+
 	@SuppressWarnings("deprecation")
 	public void donateCommand(CommandSender sender, String[] args)
 	{
@@ -107,7 +121,13 @@ public class Commands {
 			return;
 		}
 
-		Player donatePlayer  = Bukkit.getPlayer(args[1]);
+		Player donatePlayer = null;
+		try {
+			UUID id = UUID.fromString(args[1]);
+			donatePlayer = Bukkit.getPlayer(id);
+		} catch (Exception e) {
+		}
+		if (donatePlayer == null) donatePlayer = Bukkit.getPlayer(args[1]);
 		if (donatePlayer == null) {
 			sender.sendMessage(String.format("Unknown player: %s", args[1]));
 			return;
