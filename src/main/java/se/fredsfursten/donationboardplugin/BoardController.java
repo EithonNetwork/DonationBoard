@@ -73,8 +73,16 @@ public class BoardController {
 		}
 		int day = markAsDonated(player, block);
 		decreasePlayerDonationTokens(player);
+		if (day == 1) broadCastDonation(player);
+		playersNeedToRevisitBoard();
 		delayedSave();
 		delayedRefresh();
+	}
+
+	private void broadCastDonation(Player player) {
+		this._plugin.getServer().broadcastMessage(
+				String.format("Player %s has made a donation for today!",
+						player.getDisplayName()));
 	}
 
 	public void initialize(Player player, Block clickedBlock) {
@@ -87,6 +95,7 @@ public class BoardController {
 
 	public void shiftLeft() {
 		this._model.shiftLeft();
+		playersNeedToRevisitBoard();
 		delayedRefresh();
 	}
 
@@ -120,7 +129,7 @@ public class BoardController {
 
 	private void FindDonators() {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
-			playerInfo.setIsOnTheBoard(false);
+			playerInfo.setIsDonatorOnTheBoard(false);
 		}
 		for (int day = 0; day <= BoardController.numberOfDays; day++) {
 			for (int level = 0; level <= BoardController.numberOfLevels; level++) {
@@ -129,7 +138,7 @@ public class BoardController {
 				Player player = donation.getPlayer();
 				if (player == null) continue;
 				PlayerInfo playerInfo = getOrAddPlayerInfo(player);
-				playerInfo.setIsOnTheBoard(true);
+				playerInfo.setIsDonatorOnTheBoard(true);
 			}
 		}
 	}	
@@ -156,30 +165,36 @@ public class BoardController {
 	public void register(Player player) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		playerInfo.markAsHasBeenToBoard();
-		maybePromotePlayer(player);
+		maybePromotePlayer(player, true);
 	}
 
 	public void donate(Player player, int tokens) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		playerInfo.addDonationTokens(tokens);
-		maybePromotePlayer(player);
+		maybePromotePlayer(player, false);
 		delayedSave();
 	}
 
-	private void maybePromotePlayer(Player player) {
+	private void playersNeedToRevisitBoard() {
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			if (!playerInfo.shouldBeAutomaticallyPromoted())  {
+				playerInfo.resetHasBeenToBoard();
+			}
+		}	
+	}
+
+	private void maybePromotePlayer(Player player, boolean forceReset) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
-		if (playerInfo.shouldGetPerks()) {
-			int toLevel = this._model.getDonationLevel(1);
-			playerInfo.demoteOrPromote(toLevel, true);
-		}
+		int toLevel = this._model.getDonationLevel(1);
+		playerInfo.demoteOrPromote(toLevel, forceReset);
 	}
 
 	public void playerJoined(Player player) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
 		if (isDonator(player)) {
-			playerInfo.setIsOnTheBoard(true);
+			playerInfo.setIsDonatorOnTheBoard(true);
 		}
-		maybePromotePlayer(player);
+		maybePromotePlayer(player, true);
 	}
 
 	public void playerTeleportedToBoard(Player player, Location from) 
@@ -260,5 +275,9 @@ public class BoardController {
 			this._knownPlayers.put(player, playerInfo);
 		}
 		return playerInfo;
+	}
+
+	public Location getBoardLocation() {
+		return this._view.getLocation();
 	}
 }
