@@ -1,5 +1,7 @@
 package se.fredsfursten.donationboardplugin;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -95,7 +97,7 @@ public class Commands {
 
 		BoardController.get().register(registerPlayer);
 	}
-	
+
 	void gotoCommand(Player player, String[] args)
 	{
 		if (!verifyPermission(player, "donationboard.register")) return;
@@ -119,7 +121,13 @@ public class Commands {
 			return;
 		}
 
-		Player donatePlayer  = Bukkit.getPlayer(args[1]);
+		Player donatePlayer = null;
+		try {
+			UUID id = UUID.fromString(args[1]);
+			donatePlayer = Bukkit.getPlayer(id);
+		} catch (Exception e) {
+		}
+		if (donatePlayer == null) donatePlayer = Bukkit.getPlayer(args[1]);
 		if (donatePlayer == null) {
 			sender.sendMessage(String.format("Unknown player: %s", args[1]));
 			return;
