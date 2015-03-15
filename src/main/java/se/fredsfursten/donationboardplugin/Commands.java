@@ -12,6 +12,7 @@ public class Commands {
 	private static final String LOAD_COMMAND = "/donationboard load";
 	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String REGISTER_COMMAND = "/donationboard register <player>";
+	private static final String GOTO_COMMAND = "/donationboard goto";
 	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens>";
 
 	private JavaPlugin _plugin = null;
@@ -93,6 +94,17 @@ public class Commands {
 		}
 
 		BoardController.get().register(registerPlayer);
+	}
+	
+	void gotoCommand(Player player, String[] args)
+	{
+		if (!verifyPermission(player, "donationboard.register")) return;
+		if (!arrayLengthIsWithinInterval(args, 1, 1)) {
+			player.sendMessage(GOTO_COMMAND);
+			return;
+		}
+
+		player.teleport(BoardController.get().getBoardLocation());
 	}
 
 	@SuppressWarnings("deprecation")

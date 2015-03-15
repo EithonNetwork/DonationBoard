@@ -14,7 +14,7 @@ public class PlayerInfo {
 	private Player _player;
 	private int _donationTokens;
 	private int _perkLevel;
-	private boolean _isOnTheBoard;
+	private boolean _isDonatorOnTheBoard;
 	private boolean _hasBeenToBoard;
 
 	static
@@ -46,9 +46,13 @@ public class PlayerInfo {
 	public int getDonationTokens() {
 		return this._donationTokens;
 	}
-	
+
 	public boolean shouldGetPerks() {
-		return (this._donationTokens > 0) || this._isOnTheBoard || this._hasBeenToBoard;
+		return (this._donationTokens > 0) || this._isDonatorOnTheBoard || this._hasBeenToBoard;
+	}
+
+	public boolean shouldBeAutomaticallyPromoted() {
+		return (this._donationTokens > 0) || this._isDonatorOnTheBoard;
 	}
 
 	public void addDonationTokens(int tokens) {
@@ -93,45 +97,61 @@ public class PlayerInfo {
 	}
 
 	public void demoteOrPromote(int toLevel, boolean reset) {
+		int perkLevelBeforeReset = this._perkLevel;
+		if (reset) {
+			resetPerkLevel(true);
+			this._perkLevel = 0;
+		}
 		int currentPerkLevel = this._perkLevel;
-		if (reset) resetPerkLevel(true);
 		if (toLevel < currentPerkLevel) {
-			demote(toLevel);
-			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
-		} else if ((toLevel > currentPerkLevel) && shouldGetPerks()) {
-			promote(toLevel);
-			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
+			demote(toLevel, perkLevelBeforeReset);
+		} else if (toLevel > currentPerkLevel) {
+			promote(toLevel, perkLevelBeforeReset);
 		}
 	}
-	
-	public void setIsOnTheBoard(boolean isOnTheBoard)
+
+	public void setIsDonatorOnTheBoard(boolean isDonatorOnTheBoard)
 	{
-		this._isOnTheBoard = isOnTheBoard;
+		this._isDonatorOnTheBoard = isDonatorOnTheBoard;
 	}
-	
+
 	public void markAsHasBeenToBoard()
 	{
 		this._hasBeenToBoard = true;
 	}
 
-	private void promote(int toLevel) {
-		if (!shouldGetPerks()) return;
+	public void resetHasBeenToBoard()
+	{
+		this._hasBeenToBoard = false;
+	}
+
+	private void promote(int toLevel, int currentLevel) {
+		if (!shouldGetPerks()) {
+			sendMessage(String.format("If you visit the donationboard, you can raise your perk level to %d.", toLevel));
+			return;
+		}
 		for (int level = this._perkLevel + 1; level <= toLevel; level++) {
 			addGroup(level);
 		}
 		this._perkLevel = toLevel;
+		if (toLevel > currentLevel) {
+			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
+		}
 	}
 
-	private void demote(int toLevel) {
+	private void demote(int toLevel, int currentLevel) {
 		for (int level = this._perkLevel; level > toLevel; level--) {
 			removeGroup(level);
 		}
 		this._perkLevel = toLevel;
+		if (toLevel < currentLevel) {
+			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
+		}
 	}
 
 	private void resetPerkLevel(boolean force) {
 		if (force) this._perkLevel = BoardController.get().getMaxPerkLevel();
-		demote(0);
+		demote(0, 0);
 	}
 
 	private void sendMessage(String message) {
