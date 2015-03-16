@@ -1,5 +1,6 @@
 package se.fredsfursten.plugintools;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -32,5 +33,10 @@ public class Misc {
 		}
 
 		return null;
+	}
+	
+	public static void executeCommand(String command)
+	{
+		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 	}
 }

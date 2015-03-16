@@ -5,6 +5,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import se.fredsfursten.plugintools.Misc;
+
 public class PlayerInfo {
 	private static String addGroupCommand;
 	private static String removeGroupCommand;
@@ -163,17 +165,12 @@ public class PlayerInfo {
 
 	private void addGroup(int level) {
 		String command = String.format(addGroupCommand, this.getName(), level);
-		executeCommand(command);
+		Misc.executeCommand(command);
 	}
 
 	private void removeGroup(int level) {
 		String command = String.format(removeGroupCommand, this.getName(), level);
-		executeCommand(command);
-	}
-
-	private void executeCommand(String command)
-	{
-		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+		Misc.executeCommand(command);
 	}
 
 	public String toString()
