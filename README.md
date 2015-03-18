@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 1.1.2 (2015-03-18)
+
+* BUG: Loading with no view throws exception
+
 ### 1.1.1 (2015-03-15)
 
 * BUG: Restart of server could result in exception.

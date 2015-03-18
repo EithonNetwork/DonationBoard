@@ -118,6 +118,7 @@ public class BoardController {
 			return;
 		}
 		this._view = storageModel.getView();
+		if (this._view == null) return;
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
 		delayedRefresh();
