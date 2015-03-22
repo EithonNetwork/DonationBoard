@@ -2,10 +2,10 @@ package se.fredsfursten.plugintools;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class AlarmTrigger {
 	private static final long TICK_LENGTH = 100L;
@@ -37,10 +37,10 @@ public class AlarmTrigger {
 		this._plugin = null;
 	}
 
-	public void setAlarm(LocalDateTime time, Runnable task, String name)
+	public void setAlarm(String name, LocalDateTime time, Runnable task)
 	{
 		synchronized(this) {
-			Alarm alarm = new Alarm(time, task, name);
+			Alarm alarm = new Alarm(name, time, task);
 			this._alarms.add(alarm);
 			Alarm firstAlarm = getFirstAlarm();
 			if ((firstAlarm == null) || firstAlarm.getTime().isAfter(time)) {

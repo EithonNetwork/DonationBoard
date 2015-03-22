@@ -9,7 +9,7 @@ class Alarm {
 	private boolean _hasBeenSetOff;
 	private String _name;
 
-	Alarm(LocalDateTime when, Runnable task, String name)
+	Alarm(String name, LocalDateTime when, Runnable task)
 	{
 		this._when = when;
 		this._task = task;

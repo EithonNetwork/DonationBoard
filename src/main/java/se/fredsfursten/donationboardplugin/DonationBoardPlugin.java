@@ -49,11 +49,13 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		LocalDateTime alarmTomorrow = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
 		if (LocalDateTime.now().isBefore(alarmToday)) alarmTime = alarmToday;
 		else alarmTime = alarmTomorrow;
-		AlarmTrigger.get().setAlarm(alarmTime, new Runnable() {
+		AlarmTrigger.get().setAlarm("Donation board daily shift",
+				alarmTime, 
+				new Runnable() {
 			public void run() {
 				keepOnShifting();
 			}
-		}, "Donation board daily shift");
+		});
 	}
 
 	protected void keepOnShifting() {

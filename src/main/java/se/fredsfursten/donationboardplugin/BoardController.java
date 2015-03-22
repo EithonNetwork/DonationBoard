@@ -211,16 +211,19 @@ public class BoardController {
 
 	public void playerTeleportedToBoard(Player player, Location from) 
 	{
+		if (!DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) return;
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo.shouldGetPerks()) return;
 		LocalDateTime alarm = LocalDateTime.now().plusSeconds(perkClaimAfterSeconds);
-		AlarmTrigger.get().setAlarm(alarm, new Runnable() {
+		AlarmTrigger.get().setAlarm(String.format("%s can claim perk", player.getName()),
+				alarm,
+				new Runnable() {
 			public void run() {
 				if (DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) {
 					register(player);
 				}
 			}
-		}, String.format("%s can claim perk", player.getName()));	
+		});	
 	}
 
 	void refreshNow() {
