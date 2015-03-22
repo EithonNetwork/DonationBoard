@@ -2,6 +2,11 @@
 
 ## Release history
 
+### 1.1.3 (2015-03-22)
+
+* CHANGE: Now has a name for every alarm.
+* BUG: Now reloads donation board every 10 seconds until success.
+
 ### 1.1.2 (2015-03-18)
 
 * BUG: Loading with no view throws exception

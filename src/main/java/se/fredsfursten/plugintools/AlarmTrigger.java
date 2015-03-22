@@ -37,10 +37,10 @@ public class AlarmTrigger {
 		this._plugin = null;
 	}
 
-	public void setAlarm(LocalDateTime time, Runnable task)
+	public void setAlarm(LocalDateTime time, Runnable task, String name)
 	{
 		synchronized(this) {
-			Alarm alarm = new Alarm(time, task);
+			Alarm alarm = new Alarm(time, task, name);
 			this._alarms.add(alarm);
 			Alarm firstAlarm = getFirstAlarm();
 			if ((firstAlarm == null) || firstAlarm.getTime().isAfter(time)) {
@@ -77,8 +77,8 @@ public class AlarmTrigger {
 		{
 			Alarm firstAlarm = getFirstAlarm();
 			while ((firstAlarm != null) && firstAlarm.maybeSetOff()) {
-				this._plugin.getLogger().info(String.format("An alarm for %s was set off now (%s)", 
-						firstAlarm.getTime().toString(), LocalDateTime.now().toString()));
+				this._plugin.getLogger().info(String.format("The \"%s\" alarm set for %s was set off now (%s)", 
+						firstAlarm.getName(), firstAlarm.getTime().toString(), LocalDateTime.now().toString()));
 				this._alarms.remove(this._firstAlarmIndex);
 				this._firstAlarmIndex = getFirstAlarmIndex();
 				firstAlarm = this._alarms.get(this._firstAlarmIndex);				

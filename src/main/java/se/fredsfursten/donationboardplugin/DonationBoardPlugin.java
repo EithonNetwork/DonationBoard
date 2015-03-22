@@ -53,7 +53,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 			public void run() {
 				keepOnShifting();
 			}
-		});
+		}, "Donation board daily shift");
 	}
 
 	protected void keepOnShifting() {

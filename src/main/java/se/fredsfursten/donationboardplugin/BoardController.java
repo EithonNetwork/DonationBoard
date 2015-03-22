@@ -20,6 +20,7 @@ public class BoardController {
 
 	private static int numberOfDays;
 	private static int numberOfLevels;
+	private static long perkClaimAfterSeconds;
 
 	private PlayerCollection<PlayerInfo> _knownPlayers;
 
@@ -42,6 +43,7 @@ public class BoardController {
 		this._plugin = plugin;
 		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
+		perkClaimAfterSeconds = DonationBoardPlugin.getPluginConfig().getInt("PerkClaimAfterSeconds");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		loadNow();
@@ -66,8 +68,8 @@ public class BoardController {
 			player.sendMessage("You get E-tokens by donating money at http://eithon.org/donate.");
 			return;
 		}
-		int day = markAsDonated(player, block);
 		decreasePlayerDonationTokens(player);
+		int day = markAsDonated(player, block);
 		if (day == 1) broadCastDonation(player);
 		playersNeedToRevisitBoard();
 		delayedSave();
@@ -106,6 +108,15 @@ public class BoardController {
 		}
 	}
 
+	private void delayedLoad() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				loadNow();
+			}
+		}, 200L);
+	}
+
 	public void loadNow()
 	{
 		File file = DonationBoardPlugin.getDonationsStorageFile();
@@ -118,9 +129,14 @@ public class BoardController {
 			return;
 		}
 		this._view = storageModel.getView();
-		if (this._view == null) return;
+		if (this._view == null) {
+			Bukkit.getLogger().warning("Could not load donation board.");
+			delayedLoad();
+			return;
+		}
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
+		Bukkit.getLogger().info("Loaded donation board.");
 		delayedRefresh();
 	}
 
@@ -195,14 +211,16 @@ public class BoardController {
 
 	public void playerTeleportedToBoard(Player player, Location from) 
 	{
-		LocalDateTime alarm = LocalDateTime.now().plusSeconds(20);
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo.shouldGetPerks()) return;
+		LocalDateTime alarm = LocalDateTime.now().plusSeconds(perkClaimAfterSeconds);
 		AlarmTrigger.get().setAlarm(alarm, new Runnable() {
 			public void run() {
 				if (DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) {
 					register(player);
 				}
 			}
-		});	
+		}, String.format("%s can claim perk", player.getName()));	
 	}
 
 	void refreshNow() {

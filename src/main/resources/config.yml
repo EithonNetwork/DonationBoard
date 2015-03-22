@@ -3,3 +3,4 @@ Levels: 5
 AddGroupCommand: perm player %s addgroup PerkLevel%d
 RemoveGroupCommand: perm player %s removegroup PerkLevel%d
 MandatoryWorld: W_DonationBoard
+PerkClaimAfterSeconds: 20

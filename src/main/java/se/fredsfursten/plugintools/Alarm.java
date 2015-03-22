@@ -7,17 +7,24 @@ class Alarm {
 	private LocalDateTime _when;
 	private Runnable _task;
 	private boolean _hasBeenSetOff;
+	private String _name;
 
-	Alarm(LocalDateTime when, Runnable task)
+	Alarm(LocalDateTime when, Runnable task, String name)
 	{
 		this._when = when;
 		this._task = task;
+		this._name = name;
 		this._hasBeenSetOff = false;
 	}
 	
 	LocalDateTime getTime()
 	{
 		return this._when;
+	}
+	
+	String getName()
+	{
+		return this._name;
 	}
 
 	boolean maybeSetOff() 
