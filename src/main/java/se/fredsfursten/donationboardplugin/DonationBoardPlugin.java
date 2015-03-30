@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
+import se.fredsfursten.plugintools.ConfigurableFormat;
 import se.fredsfursten.plugintools.PluginConfig;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
@@ -40,6 +41,7 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
 		AlarmTrigger.get().enable(this);
+		ConfigurableFormat.enable(getPluginConfig());
 		setShiftTimer();	
 	}
 

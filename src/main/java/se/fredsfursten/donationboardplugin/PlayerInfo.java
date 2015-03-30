@@ -4,12 +4,19 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.material.Rails;
 
+import se.fredsfursten.plugintools.ConfigurableFormat;
 import se.fredsfursten.plugintools.Misc;
 
 public class PlayerInfo {
-	private static String addGroupCommand;
-	private static String removeGroupCommand;
+	private static ConfigurableFormat addGroupCommandMessage;
+	private static ConfigurableFormat removeGroupCommandMessage;
+	private static ConfigurableFormat visitBoardMessage;
+	private static ConfigurableFormat levelRaisedMessage;
+	private static ConfigurableFormat levelLoweredMessage;
+	private static ConfigurableFormat noTokensLeftMessage;
+	private static ConfigurableFormat tokensLeftMessage;
 
 	private String _name;
 	private UUID _id;
@@ -21,8 +28,20 @@ public class PlayerInfo {
 
 	static
 	{
-		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
-		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
+		addGroupCommandMessage = new ConfigurableFormat("AddGroupCommand", 2,
+				"perm player %s addgroup PerkLevel%d");
+		removeGroupCommandMessage = new ConfigurableFormat("RemoveGroupCommand", 2,
+				"perm player %s removegroup PerkLevel%d");
+		visitBoardMessage = new ConfigurableFormat("VisitBoardMessage", 1,
+				"If you visit the donationboard, you can raise your perk level to %d.");
+		levelRaisedMessage = new ConfigurableFormat("PerkLevelRaisedMessage", 1,
+				"Your perk level has been raised to %d.");
+		levelLoweredMessage = new ConfigurableFormat("PerkLevelLoweredMessage", 1,
+				"Your perk level has been lowered to %d.");
+		noTokensLeftMessage = new ConfigurableFormat("NoTokensLeftMessage", 0,
+				"You have no E-tokens left.");
+		tokensLeftMessage = new ConfigurableFormat("TokensLeftMessage", 1,
+				"You have %d remaining E-tokens.");
 	}
 
 	public PlayerInfo(Player player)
@@ -70,9 +89,9 @@ public class PlayerInfo {
 		this._donationTokens--;
 		if (this._donationTokens < 0) this._donationTokens = 0;
 		if (this._donationTokens == 0) {
-			sendMessage("You have no E-tokens left.");
+			noTokensLeftMessage.sendMessage(getPlayer());
 		} else {
-			sendMessage(String.format("You have %d remaining E-tokens.", this._donationTokens));
+			tokensLeftMessage.sendMessage(getPlayer(), this._donationTokens);
 		}
 	}
 
@@ -129,7 +148,7 @@ public class PlayerInfo {
 
 	private void promote(int toLevel, int currentLevel) {
 		if (!shouldGetPerks()) {
-			sendMessage(String.format("If you visit the donationboard, you can raise your perk level to %d.", toLevel));
+			visitBoardMessage.sendMessage(this.getPlayer(), toLevel);
 			return;
 		}
 		for (int level = this._perkLevel + 1; level <= toLevel; level++) {
@@ -137,7 +156,7 @@ public class PlayerInfo {
 		}
 		this._perkLevel = toLevel;
 		if (toLevel > currentLevel) {
-			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
+			levelRaisedMessage.sendMessage(getPlayer(), toLevel);
 		}
 	}
 
@@ -147,7 +166,7 @@ public class PlayerInfo {
 		}
 		this._perkLevel = toLevel;
 		if (toLevel < currentLevel) {
-			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
+			levelLoweredMessage.sendMessage(getPlayer(), toLevel);
 		}
 	}
 
@@ -164,12 +183,12 @@ public class PlayerInfo {
 	}
 
 	private void addGroup(int level) {
-		String command = String.format(addGroupCommand, this.getName(), level);
+		String command = addGroupCommandMessage.getMessage(this.getName(), level);
 		Misc.executeCommand(command);
 	}
 
 	private void removeGroup(int level) {
-		String command = String.format(removeGroupCommand, this.getName(), level);
+		String command = removeGroupCommandMessage.getMessage(this.getName(), level);
 		Misc.executeCommand(command);
 	}
 

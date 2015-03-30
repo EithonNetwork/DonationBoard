@@ -11,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
+import se.fredsfursten.plugintools.ConfigurableFormat;
 import se.fredsfursten.plugintools.PlayerCollection;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
@@ -21,6 +22,9 @@ public class BoardController {
 	private static int numberOfDays;
 	private static int numberOfLevels;
 	private static long perkClaimAfterSeconds;
+	private static ConfigurableFormat needTokensMessage;
+	private static ConfigurableFormat howToGetTokensMessage;
+	private static ConfigurableFormat playerHasDonatedMessage;
 
 	private PlayerCollection<PlayerInfo> _knownPlayers;
 
@@ -44,6 +48,12 @@ public class BoardController {
 		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
 		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
 		perkClaimAfterSeconds = DonationBoardPlugin.getPluginConfig().getInt("PerkClaimAfterSeconds");
+		needTokensMessage = new ConfigurableFormat("NeedTokensMessage", 0,
+				"You must have E-tokens to raise the perk level.");
+		howToGetTokensMessage = new ConfigurableFormat("HowToGetTokens", 0,
+				"You get E-tokens by donating money at http://eithon.org/donate.");
+		playerHasDonatedMessage = new ConfigurableFormat("PlayerHasDonatedMessage", 1,
+				"Player %s has made a donation for today!");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		loadNow();
@@ -64,8 +74,8 @@ public class BoardController {
 
 	void increasePerkLevel(Player player, Block block) {
 		if (!playerHasTokens(player)) {
-			player.sendMessage("You must have E-tokens to raise the perk level.");
-			player.sendMessage("You get E-tokens by donating money at http://eithon.org/donate.");
+			needTokensMessage.sendMessage(player);
+			howToGetTokensMessage.sendMessage(player);
 			return;
 		}
 		decreasePlayerDonationTokens(player);
@@ -77,9 +87,7 @@ public class BoardController {
 	}
 
 	private void broadCastDonation(Player player) {
-		this._plugin.getServer().broadcastMessage(
-				String.format("Player %s has made a donation for today!",
-						player.getDisplayName()));
+		this._plugin.getServer().broadcastMessage(playerHasDonatedMessage.getMessage(player.getDisplayName()));
 	}
 
 	public void initialize(Player player, Block clickedBlock) {

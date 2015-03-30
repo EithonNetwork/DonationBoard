@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 1.2 (2015-03-30)
+
+* NEW: Added configuration strings for all player messages
+
 ### 1.1.3 (2015-03-22)
 
 * CHANGE: Now has a name for every alarm.
