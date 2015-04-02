@@ -35,13 +35,13 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		} else {
 			configuration.load();
 		}
+		ConfigurableFormat.enable(getPluginConfig());
 		mandatoryWorld = DonationBoardPlugin.getPluginConfig().getString("MandatoryWorld");
 		donationsStorageFile = new File(getDataFolder(), "donations.bin");
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
 		AlarmTrigger.get().enable(this);
-		ConfigurableFormat.enable(getPluginConfig());
 		setShiftTimer();	
 	}
 
