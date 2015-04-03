@@ -59,6 +59,10 @@ public class Commands {
 		BoardController.get().print(player);
 	}
 
+	public void statsCommand(Player player, String[] args) {
+		BoardController.get().stats(player);
+	}
+
 	void loadCommand(Player player, String[] args)
 	{
 		if (!verifyPermission(player, "donationboard.load")) return;
@@ -116,7 +120,7 @@ public class Commands {
 			Player player = (Player) sender;
 			if (!verifyPermission(player, "donationboard.donate")) return;
 		}
-		if (!arrayLengthIsWithinInterval(args, 3, 3)) {
+		if (!arrayLengthIsWithinInterval(args, 3, 4)) {
 			sender.sendMessage(DONATE_COMMAND);
 			return;
 		}
@@ -141,7 +145,17 @@ public class Commands {
 			return;
 		}
 
-		BoardController.get().donate(donatePlayer, tokens);
+		double amount = 0.0;
+		if (args.length > 2) {
+			try {
+				amount = Double.parseDouble(args[3]);
+			} catch (Exception e) {
+				sender.sendMessage(String.format("Amount paid could not be understood: %s", args[3]));
+				return;
+			}
+		}
+
+		BoardController.get().donate(donatePlayer, tokens, amount);
 	}
 
 

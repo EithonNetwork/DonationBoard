@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -188,9 +189,9 @@ public class BoardController {
 		maybePromotePlayer(player, true);
 	}
 
-	public void donate(Player player, int tokens) {
+	public void donate(Player player, int tokens, double amount) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
-		playerInfo.addDonationTokens(tokens);
+		playerInfo.addDonationTokens(tokens, amount);
 		maybePromotePlayer(player, false);
 		delayedSave();
 	}
@@ -251,7 +252,7 @@ public class BoardController {
 	{
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo != null) {
-			if (playerInfo.getDonationTokens() > 0) return true;
+			if (playerInfo.getRemainingDonationTokens() > 0) return true;
 		}
 		return false;
 	}
@@ -304,5 +305,30 @@ public class BoardController {
 
 	public Location getBoardLocation() {
 		return this._view.getLocation();
+	}
+
+	public void stats(CommandSender sender) {
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			stats(sender, playerInfo);
+		}
+	}
+
+	public void stats(CommandSender sender, Player player)
+	{
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo == null) {
+			sender.sendMessage(String.format("%s has no donation information.", player.getName()));
+			return;
+		}
+		stats(sender, playerInfo);
+	}
+
+	public void stats(CommandSender sender, PlayerInfo playerInfo)
+	{
+		sender.sendMessage(String.format("%s has %d E-tokens, of %d (%.2f€) in total.", 
+				playerInfo.getName(),
+				playerInfo.getRemainingDonationTokens(),
+				playerInfo.getTotalTokensDonated(),
+				playerInfo.getTotalMoneyDonated()));	
 	}
 }

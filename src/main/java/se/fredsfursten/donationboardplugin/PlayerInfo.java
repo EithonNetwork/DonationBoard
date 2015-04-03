@@ -21,7 +21,9 @@ public class PlayerInfo {
 	private String _name;
 	private UUID _id;
 	private Player _player;
-	private int _donationTokens;
+	private int _remainingDonationTokens;
+	private double _totalMoneyDonated;
+	private long _totalTokensDonated;
 	private int _perkLevel;
 	private boolean _isDonatorOnTheBoard;
 	private boolean _hasBeenToBoard;
@@ -49,49 +51,61 @@ public class PlayerInfo {
 		this._player = player;
 		this._name = player.getName();
 		this._id = player.getUniqueId();
-		this._donationTokens = 0;
+		this._remainingDonationTokens = 0;
 		this._perkLevel = 0;
 		this._hasBeenToBoard = false;
 	}
 
-	public PlayerInfo(UUID uniqueId, int donationTokens)
+	public PlayerInfo(UUID uniqueId, int remainingDonationTokens, long totalTokensDonated, double totalAmountDonated)
 	{
 		this._player = null;
 		this._name = null;
 		this._id = uniqueId;
-		this._donationTokens = donationTokens;
+		this._remainingDonationTokens = remainingDonationTokens;
+		this._totalTokensDonated = totalTokensDonated;
+		this._totalMoneyDonated = totalAmountDonated;
 		this._perkLevel = 0;
 		this._hasBeenToBoard = false;
 	}
 
-	public int getDonationTokens() {
-		return this._donationTokens;
+	public int getRemainingDonationTokens() {
+		return this._remainingDonationTokens;
+	}
+
+	public long getTotalTokensDonated() {
+		return this._totalTokensDonated;
+	}
+
+	public double getTotalMoneyDonated() {
+		return this._totalMoneyDonated;
 	}
 
 	public boolean shouldGetPerks() {
-		return (this._donationTokens > 0) || this._isDonatorOnTheBoard || this._hasBeenToBoard;
+		return (this._remainingDonationTokens > 0) || this._isDonatorOnTheBoard || this._hasBeenToBoard;
 	}
 
 	public boolean shouldBeAutomaticallyPromoted() {
-		return (this._donationTokens > 0) || this._isDonatorOnTheBoard;
+		return (this._remainingDonationTokens > 0) || this._isDonatorOnTheBoard;
 	}
 
-	public void addDonationTokens(int tokens) {
-		this._donationTokens+=tokens;
-		sendMessage(String.format("You now have %d E-tokens.", getDonationTokens()));
+	public void addDonationTokens(int tokens, double amount) {
+		this._remainingDonationTokens+=tokens;
+		this._totalTokensDonated += tokens;
+		this._totalMoneyDonated += amount;
+		sendMessage(String.format("You now have %d E-tokens to use on the donation board.", getRemainingDonationTokens()));
 	}
 
 	public void usedOneToken() {
-		if (this._donationTokens < 0) {
-			this._donationTokens = 0;
+		if (this._remainingDonationTokens < 0) {
+			this._remainingDonationTokens = 0;
 			return;
 		}			
-		this._donationTokens--;
-		if (this._donationTokens < 0) this._donationTokens = 0;
-		if (this._donationTokens == 0) {
+		this._remainingDonationTokens--;
+		if (this._remainingDonationTokens < 0) this._remainingDonationTokens = 0;
+		if (this._remainingDonationTokens == 0) {
 			noTokensLeftMessage.sendMessage(getPlayer());
 		} else {
-			tokensLeftMessage.sendMessage(getPlayer(), this._donationTokens);
+			tokensLeftMessage.sendMessage(getPlayer(), this._remainingDonationTokens);
 		}
 	}
 
@@ -194,6 +208,6 @@ public class PlayerInfo {
 
 	public String toString()
 	{
-		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._donationTokens, this._perkLevel);
+		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._remainingDonationTokens, this._perkLevel);
 	}
 }

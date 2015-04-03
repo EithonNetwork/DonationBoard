@@ -40,8 +40,13 @@ class BoardStorageModel implements Serializable {
 		this.worldId = view.getWorld().getUID();
 		this.donators = new ArrayList<PlayerStorageModel>();
 		for (PlayerInfo playerInfo : knownPlayers) {
-			if (playerInfo.getDonationTokens() > 0) {
-				this.donators.add(new PlayerStorageModel(playerInfo.getUniqueId(), playerInfo.getDonationTokens()));
+			if (playerInfo.getRemainingDonationTokens() > 0) {
+				this.donators.add(
+						new PlayerStorageModel(
+								playerInfo.getUniqueId(), 
+								playerInfo.getRemainingDonationTokens(),
+								playerInfo.getTotalTokensDonated(),
+								playerInfo.getTotalMoneyDonated()));
 			}
 		}
 	}
@@ -75,7 +80,12 @@ class BoardStorageModel implements Serializable {
 		PlayerCollection<PlayerInfo> knownPlayers = new PlayerCollection<PlayerInfo>();
 		if (this.donators == null) return knownPlayers;
 		for (PlayerStorageModel storageModel : this.donators) {
-			knownPlayers.put(storageModel.getUniqueId(), new PlayerInfo(storageModel.getUniqueId(), storageModel.getDonationTokens()));
+			knownPlayers.put(storageModel.getUniqueId(), 
+					new PlayerInfo(
+							storageModel.getUniqueId(), 
+							storageModel.getRemainingDonationTokens(),
+							storageModel.getTotalTokensDonated(), 
+							storageModel.getTotalMoneyDonated()));
 		}
 		
 		return knownPlayers;

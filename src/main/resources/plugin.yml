@@ -1,12 +1,12 @@
 name: DonationBoardPlugin
 main: se.fredsfursten.donationboardplugin.DonationBoardPlugin
-version: 1.2.2
+version: 1.3
 author: vanbrayne
 description: A Minecraft plugin for keeping scores of donations on a donation board
 commands:
   donationboard:
     description: Control the donation board
-    usage: /donationboard shift | print | load | save | register | donate | goto
+    usage: /donationboard shift | print | load | save | register | donate | goto | stats
     permission-message: You don't have <permission>
 permissions:
   donationboard.*:
@@ -18,6 +18,7 @@ permissions:
     donationboard.save: true
     donationboard.goto: true
     donationboard.register: true
+    donationboard.stats: true
   donationboard.shift:
     description: Access to /donationboard shift command
     default: op
@@ -38,4 +39,7 @@ permissions:
     default: op
   donationboard.goto:
     description: Access to /donationboard goto command
+    default: op
+  donationboard.stats:
+    description: Access to /donationboard stats command
     default: op

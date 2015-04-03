@@ -142,6 +142,8 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 				Commands.get().saveCommand(player, args);
 			} else if (command.equals("goto")) {
 				Commands.get().gotoCommand(player, args);
+			} else if (command.equals("stats")) {
+				Commands.get().statsCommand(player, args);
 			} else {
 				sender.sendMessage("Could not understand command.");
 				return false;

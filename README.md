@@ -2,6 +2,11 @@
 
 ## Release history
 
+### 1.3 (2015-04-03)
+
+* NEW: Added a stats command
+* NEW: New file format that now saves the total tokens and total amount donated.
+
 ### 1.2.2 (2015-04-03)
 
 * CHANGE: New plugin tools
