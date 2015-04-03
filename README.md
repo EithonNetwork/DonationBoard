@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 1.2.2 (2015-04-03)
+
+* CHANGE: New plugin tools
+
 ### 1.2 (2015-03-30)
 
 * NEW: Added configuration strings for all player messages
