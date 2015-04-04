@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 1.4 (2015-04-04)
+
+* NEW: Now uses EithonLibraryPlugin.
+
 ### 1.3 (2015-04-03)
 
 * NEW: Added a stats command
