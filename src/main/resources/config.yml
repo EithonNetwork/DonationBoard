@@ -12,4 +12,4 @@ NeedTokensMessage: You must have E-tokens to raise the perk level.
 HowToGetTokens: You get E-tokens by donating money at http://eithon.org/donate.
 #
 # PlayerHasDonatedMessage has 1 parameter: <player> (%s)
-PlayerHasDonatedMessage:Player %s has made a donation for today!
+PlayerHasDonatedMessage: Player %s has made a donation for today!
