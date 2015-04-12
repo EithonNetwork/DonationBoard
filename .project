@@ -3,7 +3,7 @@
 	<name>DonationBoardPlugin</name>
 	<comment></comment>
 	<projects>
-		<project>PluginTools</project>
+		<project>EithonLibraryPlugin</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

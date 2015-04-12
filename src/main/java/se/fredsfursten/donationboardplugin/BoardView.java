@@ -5,8 +5,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
+import org.json.simple.JSONObject;
 
-import se.fredsfursten.plugintools.PlayerCollection;
+import se.fredsfursten.plugintools.Json;
 
 class BoardView {
 	private Block _startBlock;
@@ -40,6 +41,7 @@ class BoardView {
 			int newDonationLevel = board.getDonationLevel(day);
 			for (int level = 1; level <= board.getNumberOfLevels(); level++) {
 				Block block = getBlock(day, level);
+				if (block == null) continue;
 				String blockPlayerName = getSkullOwner(block);
 				String modelPlayerName = board.getDonationInfo(day, level).getPlayerName();
 				if (modelPlayerName != null) {
@@ -59,6 +61,7 @@ class BoardView {
 		for (int day = 1; day <= board.getNumberOfDays(); day++) {
 			for (int level = 1; level <= board.getNumberOfLevels(); level++) {
 				Block block = getBlock(day, level);
+				if (block == null) continue;
 				String playerName = getSkullOwner(block);
 				if (playerName != null) board.markOnlyThis(day, level, playerName);
 			}
@@ -85,6 +88,7 @@ class BoardView {
 	}
 
 	int calculateDay(Block block) {
+		if (this._startBlock == null) return 1;
 		if (this._stepX != 0) {
 			return Math.abs(block.getX() - this._startBlock.getX() + 1);
 		} else {
@@ -101,6 +105,7 @@ class BoardView {
 	}
 
 	private Block getBlockInternal(int dayIndex, int levelIndex) {
+		if (this._startBlock == null) return null;
 		Block block = this._startBlock.getWorld().getBlockAt(
 				this._startBlock.getX()+this._stepX*dayIndex, 
 				this._startBlock.getY()+levelIndex, 
@@ -128,6 +133,21 @@ class BoardView {
 	}
 
 	public Location getLocation() {
+		if (this._startBlock == null) return null;
 		return this._startBlock.getLocation();
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("world", Json.fromWorld(this.getWorld()));
+		json.put("startBlock", Json.fromBlock(getBlock(1, 1), true));
+		json.put("stepX", this._stepX);
+		json.put("stepZ", this._stepZ);
+		return json;
+	}
+
+	public static BoardView fromJson(JSONObject json) {
+		return new BoardView(Json.toBlock(json, null));
 	}
 }

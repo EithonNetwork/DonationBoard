@@ -8,7 +8,6 @@ import java.time.LocalTime;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,17 +23,12 @@ import se.fredsfursten.plugintools.PluginConfig;
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
 	private static File donationsStorageFile;
-	private static PluginConfig configuration;
 	private static String mandatoryWorld;
 
 	@Override
 	public void onEnable() {
-		if (configuration == null) {
-			configuration = new PluginConfig(this, "config.yml");
-		} else {
-			configuration.load();
-		}
-		mandatoryWorld = DonationBoardPlugin.getPluginConfig().getString("MandatoryWorld");
+		PluginConfig.enable(this);
+		mandatoryWorld = PluginConfig.get().getString("MandatoryWorld", "");
 		donationsStorageFile = new File(getDataFolder(), "donations.bin");
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
@@ -49,7 +43,9 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 		LocalDateTime alarmTomorrow = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(7,0,0));
 		if (LocalDateTime.now().isBefore(alarmToday)) alarmTime = alarmToday;
 		else alarmTime = alarmTomorrow;
-		AlarmTrigger.get().setAlarm(alarmTime, new Runnable() {
+		AlarmTrigger.get().setAlarm("Donation board daily shift",
+				alarmTime, 
+				new Runnable() {
 			public void run() {
 				keepOnShifting();
 			}
@@ -71,11 +67,6 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	public static File getDonationsStorageFile()
 	{
 		return donationsStorageFile;
-	}
-
-	public static FileConfiguration getPluginConfig()
-	{
-		return configuration.getFileConfiguration();
 	}
 
 	@EventHandler
@@ -138,6 +129,8 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 				Commands.get().saveCommand(player, args);
 			} else if (command.equals("goto")) {
 				Commands.get().gotoCommand(player, args);
+			} else if (command.equals("stats")) {
+				Commands.get().statsCommand(player, args);
 			} else {
 				sender.sendMessage("Could not understand command.");
 				return false;

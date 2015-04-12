@@ -1,20 +1,23 @@
 package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.TemporalUnit;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
+import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Json;
+import se.fredsfursten.plugintools.Misc;
 import se.fredsfursten.plugintools.PlayerCollection;
+import se.fredsfursten.plugintools.PluginConfig;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
 public class BoardController {
@@ -23,6 +26,10 @@ public class BoardController {
 
 	private static int numberOfDays;
 	private static int numberOfLevels;
+	private static long perkClaimAfterSeconds;
+	private static ConfigurableFormat needTokensMessage;
+	private static ConfigurableFormat howToGetTokensMessage;
+	private static ConfigurableFormat playerHasDonatedMessage;
 
 	private PlayerCollection<PlayerInfo> _knownPlayers;
 
@@ -43,8 +50,15 @@ public class BoardController {
 
 	void enable(JavaPlugin plugin){
 		this._plugin = plugin;
-		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
-		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
+		numberOfDays = PluginConfig.get().getInt("Days", 31);
+		numberOfLevels = PluginConfig.get().getInt("Levels", 5);
+		perkClaimAfterSeconds = PluginConfig.get().getInt("PerkClaimAfterSeconds", 10);
+		needTokensMessage = new ConfigurableFormat("NeedTokensMessage", 0,
+				"You must have E-tokens to raise the perk level.");
+		howToGetTokensMessage = new ConfigurableFormat("HowToGetTokens", 0,
+				"You get E-tokens by donating money at http://eithon.org/donate.");
+		playerHasDonatedMessage = new ConfigurableFormat("PlayerHasDonatedMessage", 1,
+				"Player %s has made a donation for today!");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
 		this._knownPlayers = new PlayerCollection<PlayerInfo>();
 		loadNow();
@@ -65,12 +79,12 @@ public class BoardController {
 
 	void increasePerkLevel(Player player, Block block) {
 		if (!playerHasTokens(player)) {
-			player.sendMessage("You must have E-tokens to raise the perk level.");
-			player.sendMessage("You get E-tokens by donating money at http://eithon.org/donate.");
+			needTokensMessage.sendMessage(player);
+			howToGetTokensMessage.sendMessage(player);
 			return;
 		}
-		int day = markAsDonated(player, block);
 		decreasePlayerDonationTokens(player);
+		int day = markAsDonated(player, block);
 		if (day == 1) broadCastDonation(player);
 		playersNeedToRevisitBoard();
 		delayedSave();
@@ -78,9 +92,7 @@ public class BoardController {
 	}
 
 	private void broadCastDonation(Player player) {
-		this._plugin.getServer().broadcastMessage(
-				String.format("Player %s has made a donation for today!",
-						player.getDisplayName()));
+		this._plugin.getServer().broadcastMessage(playerHasDonatedMessage.getMessage(player.getDisplayName()));
 	}
 
 	public void initialize(Player player, Block clickedBlock) {
@@ -97,21 +109,68 @@ public class BoardController {
 		delayedRefresh();
 	}
 
+	@SuppressWarnings("unchecked")
 	public void saveNow()
 	{
-		File file = DonationBoardPlugin.getDonationsStorageFile();
-		BoardStorageModel storageModel = new BoardStorageModel(this._view, this._model, this._knownPlayers);
-		try {
-			SavingAndLoadingBinary.save(storageModel, file);
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (this._view == null) return;
+		File jsonFile = new File(this._plugin.getDataFolder(), "donations.json");
+		JSONObject payload = new JSONObject();
+		payload.put("view", this._view.toJson());
+		payload.put("players", knownPlayersToJson());
+
+		JSONObject json = Json.fromBody("donationBoard", 1, payload);
+
+		Json.save(jsonFile, json);
+
+		File binFile = DonationBoardPlugin.getDonationsStorageFile();
+		if(binFile.exists()) {
+			// Verify that we can load the json file
+			JSONObject data = Json.load(jsonFile);
+			if (data == null) {
+				Misc.warning("Can't read the json file \"%s\", so we don't dare to remove the bin file \"%s\".",
+						jsonFile.getName(), binFile.getName());
+				return;
+			}
+			try { binFile.delete(); } catch (Exception ex) {}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONArray knownPlayersToJson() {
+		JSONArray json = new JSONArray();
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			if (playerInfo.getRemainingDonationTokens() > 0) {
+				json.add(playerInfo.toJson());
+			}
+		}
+		return json;
+	}
+
+	private PlayerCollection<PlayerInfo> knownPlayersFromJson(JSONArray json) {
+		PlayerCollection<PlayerInfo> players = new PlayerCollection<PlayerInfo>();
+		for (Object object : json) {
+			PlayerInfo info = PlayerInfo.fromJson((JSONObject) object);
+			players.put(info.getUniqueId(), info);
+		}
+		return players;
+	}
+
+
+	private void delayedLoad() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				loadNow();
+			}
+		}, 200L);
 	}
 
 	public void loadNow()
 	{
 		File file = DonationBoardPlugin.getDonationsStorageFile();
-		if(!file.exists()) return;
+		if(!file.exists()) {
+			loadJson();
+		}
 		BoardStorageModel storageModel;
 		try {
 			storageModel = SavingAndLoadingBinary.load(file);
@@ -120,11 +179,33 @@ public class BoardController {
 			return;
 		}
 		this._view = storageModel.getView();
+		if (this._view == null) {
+			Bukkit.getLogger().warning("Could not load donation board.");
+			delayedLoad();
+			return;
+		}
 		this._view.updateBoardModel(this._model);
 		this._knownPlayers = storageModel.getKnownPlayers();
+		Bukkit.getLogger().info("Loaded donation board.");
 		delayedRefresh();
 	}
 
+	private void loadJson() {
+		File file = new File(this._plugin.getDataFolder(), "donations.json");
+		JSONObject data = Json.load(file);
+		if (data == null) {
+			Misc.debugInfo("The file was empty.");
+			return;			
+		}
+		JSONObject payload = (JSONObject)Json.toBodyPayload(data);
+		if (payload == null) {
+			Misc.warning("The donation board payload was empty.");
+			return;
+		}
+		this._view = BoardView.fromJson((JSONObject)payload.get("view"));
+		this._knownPlayers = knownPlayersFromJson((JSONArray)payload.get("players"));
+	}
+	
 	private void FindDonators() {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.setIsDonatorOnTheBoard(false);
@@ -165,9 +246,9 @@ public class BoardController {
 		maybePromotePlayer(player, true);
 	}
 
-	public void donate(Player player, int tokens) {
+	public void donate(Player player, int tokens, double amount) {
 		PlayerInfo playerInfo = getOrAddPlayerInfo(player);
-		playerInfo.addDonationTokens(tokens);
+		playerInfo.addDonationTokens(tokens, amount);
 		maybePromotePlayer(player, false);
 		delayedSave();
 	}
@@ -196,8 +277,13 @@ public class BoardController {
 
 	public void playerTeleportedToBoard(Player player, Location from) 
 	{
-		LocalDateTime alarm = LocalDateTime.now().plusSeconds(20);
-		AlarmTrigger.get().setAlarm(alarm, new Runnable() {
+		if (!DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) return;
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo.shouldGetPerks()) return;
+		LocalDateTime alarm = LocalDateTime.now().plusSeconds(perkClaimAfterSeconds);
+		AlarmTrigger.get().setAlarm(String.format("%s can claim perk", player.getName()),
+				alarm,
+				new Runnable() {
 			public void run() {
 				if (DonationBoardPlugin.isInMandatoryWorld(player.getWorld())) {
 					register(player);
@@ -223,7 +309,7 @@ public class BoardController {
 	{
 		PlayerInfo playerInfo = this._knownPlayers.get(player);
 		if (playerInfo != null) {
-			if (playerInfo.getDonationTokens() > 0) return true;
+			if (playerInfo.getRemainingDonationTokens() > 0) return true;
 		}
 		return false;
 	}
@@ -276,5 +362,30 @@ public class BoardController {
 
 	public Location getBoardLocation() {
 		return this._view.getLocation();
+	}
+
+	public void stats(CommandSender sender) {
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			stats(sender, playerInfo);
+		}
+	}
+
+	public void stats(CommandSender sender, Player player)
+	{
+		PlayerInfo playerInfo = this._knownPlayers.get(player);
+		if (playerInfo == null) {
+			sender.sendMessage(String.format("%s has no donation information.", player.getName()));
+			return;
+		}
+		stats(sender, playerInfo);
+	}
+
+	public void stats(CommandSender sender, PlayerInfo playerInfo)
+	{
+		sender.sendMessage(String.format("%s has %d E-tokens, of %d (%.2f�) in total.", 
+				playerInfo.getName(),
+				playerInfo.getRemainingDonationTokens(),
+				playerInfo.getTotalTokensDonated(),
+				playerInfo.getTotalMoneyDonated()));	
 	}
 }

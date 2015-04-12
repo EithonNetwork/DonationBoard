@@ -4,23 +4,47 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.json.simple.JSONObject;
+
+import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Json;
+import se.fredsfursten.plugintools.Misc;
 
 public class PlayerInfo {
-	private static String addGroupCommand;
-	private static String removeGroupCommand;
+	private static ConfigurableFormat addGroupCommandMessage;
+	private static ConfigurableFormat removeGroupCommandMessage;
+	private static ConfigurableFormat visitBoardMessage;
+	private static ConfigurableFormat levelRaisedMessage;
+	private static ConfigurableFormat levelLoweredMessage;
+	private static ConfigurableFormat noTokensLeftMessage;
+	private static ConfigurableFormat tokensLeftMessage;
 
 	private String _name;
 	private UUID _id;
 	private Player _player;
-	private int _donationTokens;
+	private int _remainingDonationTokens;
+	private double _totalMoneyDonated;
+	private long _totalTokensDonated;
 	private int _perkLevel;
 	private boolean _isDonatorOnTheBoard;
 	private boolean _hasBeenToBoard;
 
 	static
 	{
-		addGroupCommand = DonationBoardPlugin.getPluginConfig().getString("AddGroupCommand");
-		removeGroupCommand = DonationBoardPlugin.getPluginConfig().getString("RemoveGroupCommand");
+		addGroupCommandMessage = new ConfigurableFormat("AddGroupCommand", 2,
+				"perm player %s addgroup PerkLevel%d");
+		removeGroupCommandMessage = new ConfigurableFormat("RemoveGroupCommand", 2,
+				"perm player %s removegroup PerkLevel%d");
+		visitBoardMessage = new ConfigurableFormat("VisitBoardMessage", 1,
+				"If you visit the donationboard, you can raise your perk level to %d.");
+		levelRaisedMessage = new ConfigurableFormat("PerkLevelRaisedMessage", 1,
+				"Your perk level has been raised to %d.");
+		levelLoweredMessage = new ConfigurableFormat("PerkLevelLoweredMessage", 1,
+				"Your perk level has been lowered to %d.");
+		noTokensLeftMessage = new ConfigurableFormat("NoTokensLeftMessage", 0,
+				"You have no E-tokens left.");
+		tokensLeftMessage = new ConfigurableFormat("TokensLeftMessage", 1,
+				"You have %d remaining E-tokens.");
 	}
 
 	public PlayerInfo(Player player)
@@ -28,49 +52,94 @@ public class PlayerInfo {
 		this._player = player;
 		this._name = player.getName();
 		this._id = player.getUniqueId();
-		this._donationTokens = 0;
+		this._remainingDonationTokens = 0;
 		this._perkLevel = 0;
 		this._hasBeenToBoard = false;
 	}
 
-	public PlayerInfo(UUID uniqueId, int donationTokens)
+	public PlayerInfo(UUID uniqueId, int remainingDonationTokens, long totalTokensDonated, double totalAmountDonated)
 	{
 		this._player = null;
 		this._name = null;
 		this._id = uniqueId;
-		this._donationTokens = donationTokens;
+		this._remainingDonationTokens = remainingDonationTokens;
+		this._totalTokensDonated = totalTokensDonated;
+		this._totalMoneyDonated = totalAmountDonated;
 		this._perkLevel = 0;
 		this._hasBeenToBoard = false;
 	}
 
-	public int getDonationTokens() {
-		return this._donationTokens;
+	public PlayerInfo(UUID uniqueId, String name, int remainingDonationTokens, long totalTokensDonated, double totalAmountDonated)
+	{
+		this._player = null;
+		this._name = name;
+		this._id = uniqueId;
+		this._remainingDonationTokens = remainingDonationTokens;
+		this._totalTokensDonated = totalTokensDonated;
+		this._totalMoneyDonated = totalAmountDonated;
+		this._perkLevel = 0;
+		this._hasBeenToBoard = false;
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("player", Json.fromPlayer(this._id, this._name));
+		json.put("remainingDonationTokens", this._remainingDonationTokens);
+		json.put("totalTokensDonated", this._totalTokensDonated);
+		json.put("totalMoneyDonated", this._totalMoneyDonated);
+		return json;
+	}
+
+	public static PlayerInfo fromJson(JSONObject json)
+	{
+		return new PlayerInfo(
+				Json.toPlayerId((JSONObject) json.get("player")),
+				Json.toPlayerName((JSONObject) json.get("player")),
+				(int) json.get("remainingDonationTokens"),
+				(long) json.get("totalTokensDonated"),
+				(double) json.get("totalMoneyDonated"));
+	}
+
+
+	public int getRemainingDonationTokens() {
+		return this._remainingDonationTokens;
+	}
+
+	public long getTotalTokensDonated() {
+		return this._totalTokensDonated;
+	}
+
+	public double getTotalMoneyDonated() {
+		return this._totalMoneyDonated;
 	}
 
 	public boolean shouldGetPerks() {
-		return (this._donationTokens > 0) || this._isDonatorOnTheBoard || this._hasBeenToBoard;
+		return (this._remainingDonationTokens > 0) || this._isDonatorOnTheBoard || this._hasBeenToBoard;
 	}
 
 	public boolean shouldBeAutomaticallyPromoted() {
-		return (this._donationTokens > 0) || this._isDonatorOnTheBoard;
+		return (this._remainingDonationTokens > 0) || this._isDonatorOnTheBoard;
 	}
 
-	public void addDonationTokens(int tokens) {
-		this._donationTokens+=tokens;
-		sendMessage(String.format("You now have %d E-tokens.", getDonationTokens()));
+	public void addDonationTokens(int tokens, double amount) {
+		this._remainingDonationTokens+=tokens;
+		this._totalTokensDonated += tokens;
+		this._totalMoneyDonated += amount;
+		sendMessage(String.format("You now have %d E-tokens to use on the donation board.", getRemainingDonationTokens()));
 	}
 
 	public void usedOneToken() {
-		if (this._donationTokens < 0) {
-			this._donationTokens = 0;
+		if (this._remainingDonationTokens < 0) {
+			this._remainingDonationTokens = 0;
 			return;
 		}			
-		this._donationTokens--;
-		if (this._donationTokens < 0) this._donationTokens = 0;
-		if (this._donationTokens == 0) {
-			sendMessage("You have no E-tokens left.");
+		this._remainingDonationTokens--;
+		if (this._remainingDonationTokens < 0) this._remainingDonationTokens = 0;
+		if (this._remainingDonationTokens == 0) {
+			noTokensLeftMessage.sendMessage(getPlayer());
 		} else {
-			sendMessage(String.format("You have %d remaining E-tokens.", this._donationTokens));
+			tokensLeftMessage.sendMessage(getPlayer(), this._remainingDonationTokens);
 		}
 	}
 
@@ -127,7 +196,7 @@ public class PlayerInfo {
 
 	private void promote(int toLevel, int currentLevel) {
 		if (!shouldGetPerks()) {
-			sendMessage(String.format("If you visit the donationboard, you can raise your perk level to %d.", toLevel));
+			visitBoardMessage.sendMessage(this.getPlayer(), toLevel);
 			return;
 		}
 		for (int level = this._perkLevel + 1; level <= toLevel; level++) {
@@ -135,7 +204,7 @@ public class PlayerInfo {
 		}
 		this._perkLevel = toLevel;
 		if (toLevel > currentLevel) {
-			sendMessage(String.format("Your perk level has been raised to %d.", toLevel));
+			levelRaisedMessage.sendMessage(getPlayer(), toLevel);
 		}
 	}
 
@@ -145,7 +214,7 @@ public class PlayerInfo {
 		}
 		this._perkLevel = toLevel;
 		if (toLevel < currentLevel) {
-			sendMessage(String.format("Your perk level has been lowered to %d.", toLevel));
+			levelLoweredMessage.sendMessage(getPlayer(), toLevel);
 		}
 	}
 
@@ -162,22 +231,17 @@ public class PlayerInfo {
 	}
 
 	private void addGroup(int level) {
-		String command = String.format(addGroupCommand, this.getName(), level);
-		executeCommand(command);
+		String command = addGroupCommandMessage.getMessage(this.getName(), level);
+		Misc.executeCommand(command);
 	}
 
 	private void removeGroup(int level) {
-		String command = String.format(removeGroupCommand, this.getName(), level);
-		executeCommand(command);
-	}
-
-	private void executeCommand(String command)
-	{
-		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+		String command = removeGroupCommandMessage.getMessage(this.getName(), level);
+		Misc.executeCommand(command);
 	}
 
 	public String toString()
 	{
-		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._donationTokens, this._perkLevel);
+		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._remainingDonationTokens, this._perkLevel);
 	}
 }
