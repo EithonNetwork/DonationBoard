@@ -7,9 +7,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.json.simple.JSONObject;
 
+import se.fredsfursten.plugintools.IJson;
 import se.fredsfursten.plugintools.Json;
 
-class BoardView {
+class BoardView implements IJson<PlayerInfo> {
 	private Block _startBlock;
 	int _stepX;
 	int _stepZ;
@@ -140,14 +141,22 @@ class BoardView {
 	@SuppressWarnings("unchecked")
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
-		json.put("world", Json.fromWorld(this.getWorld()));
 		json.put("startBlock", Json.fromBlock(getBlock(1, 1), true));
 		json.put("stepX", this._stepX);
 		json.put("stepZ", this._stepZ);
 		return json;
 	}
 
-	public static BoardView fromJson(JSONObject json) {
-		return new BoardView(Json.toBlock(json, null));
+	@Override
+	public PlayerInfo factory() {
+		return new PlayerInfo();
+	}
+
+	@Override
+	public void fromJson(Object json) {
+		JSONObject jsonObject = (JSONObject) json;
+		this._startBlock = Json.toBlock(jsonObject, null);
+		this._stepX = (int) jsonObject.get("stepX");
+		this._stepZ = (int) jsonObject.get("stepZ");
 	}
 }

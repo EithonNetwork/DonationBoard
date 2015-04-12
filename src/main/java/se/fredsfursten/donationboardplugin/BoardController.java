@@ -2,6 +2,7 @@ package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
 import java.time.LocalDateTime;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -9,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
@@ -50,17 +50,19 @@ public class BoardController {
 
 	void enable(JavaPlugin plugin){
 		this._plugin = plugin;
-		numberOfDays = PluginConfig.get().getInt("Days", 31);
-		numberOfLevels = PluginConfig.get().getInt("Levels", 5);
-		perkClaimAfterSeconds = PluginConfig.get().getInt("PerkClaimAfterSeconds", 10);
-		needTokensMessage = new ConfigurableFormat("NeedTokensMessage", 0,
+		PlayerInfo.initialize(plugin);
+		PluginConfig config = PluginConfig.get(plugin);
+		numberOfDays = config.getInt("Days", 31);
+		numberOfLevels = config.getInt("Levels", 5);
+		perkClaimAfterSeconds = config.getInt("PerkClaimAfterSeconds", 10);
+		needTokensMessage = new ConfigurableFormat(config, "NeedTokensMessage", 0,
 				"You must have E-tokens to raise the perk level.");
-		howToGetTokensMessage = new ConfigurableFormat("HowToGetTokens", 0,
+		howToGetTokensMessage = new ConfigurableFormat(config, "HowToGetTokens", 0,
 				"You get E-tokens by donating money at http://eithon.org/donate.");
-		playerHasDonatedMessage = new ConfigurableFormat("PlayerHasDonatedMessage", 1,
+		playerHasDonatedMessage = new ConfigurableFormat(config, "PlayerHasDonatedMessage", 1,
 				"Player %s has made a donation for today!");
 		this._model = new BoardModel(numberOfDays, numberOfLevels);
-		this._knownPlayers = new PlayerCollection<PlayerInfo>();
+		this._knownPlayers = new PlayerCollection<PlayerInfo>(new PlayerInfo());
 		loadNow();
 	}
 
@@ -73,7 +75,7 @@ public class BoardController {
 		updatePerkLevel(0);
 		this._model = null;
 		this._view = null;
-		this._knownPlayers = new PlayerCollection<PlayerInfo>();
+		this._knownPlayers = new PlayerCollection<PlayerInfo>(new PlayerInfo());
 		this._plugin = null;
 	}
 
@@ -116,7 +118,7 @@ public class BoardController {
 		File jsonFile = new File(this._plugin.getDataFolder(), "donations.json");
 		JSONObject payload = new JSONObject();
 		payload.put("view", this._view.toJson());
-		payload.put("players", knownPlayersToJson());
+		payload.put("players", this._knownPlayers.toJson());
 
 		JSONObject json = Json.fromBody("donationBoard", 1, payload);
 
@@ -135,27 +137,6 @@ public class BoardController {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private JSONArray knownPlayersToJson() {
-		JSONArray json = new JSONArray();
-		for (PlayerInfo playerInfo : this._knownPlayers) {
-			if (playerInfo.getRemainingDonationTokens() > 0) {
-				json.add(playerInfo.toJson());
-			}
-		}
-		return json;
-	}
-
-	private PlayerCollection<PlayerInfo> knownPlayersFromJson(JSONArray json) {
-		PlayerCollection<PlayerInfo> players = new PlayerCollection<PlayerInfo>();
-		for (Object object : json) {
-			PlayerInfo info = PlayerInfo.fromJson((JSONObject) object);
-			players.put(info.getUniqueId(), info);
-		}
-		return players;
-	}
-
-
 	private void delayedLoad() {
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
@@ -170,6 +151,7 @@ public class BoardController {
 		File file = DonationBoardPlugin.getDonationsStorageFile();
 		if(!file.exists()) {
 			loadJson();
+			return;
 		}
 		BoardStorageModel storageModel;
 		try {
@@ -202,8 +184,8 @@ public class BoardController {
 			Misc.warning("The donation board payload was empty.");
 			return;
 		}
-		this._view = BoardView.fromJson((JSONObject)payload.get("view"));
-		this._knownPlayers = knownPlayersFromJson((JSONArray)payload.get("players"));
+		this._view.fromJson((JSONObject)payload.get("view"));
+		this._knownPlayers.fromJson(payload.get("players"));
 	}
 	
 	private void FindDonators() {

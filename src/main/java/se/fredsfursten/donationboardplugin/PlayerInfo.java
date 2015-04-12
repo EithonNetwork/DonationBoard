@@ -4,13 +4,17 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.IJson;
+import se.fredsfursten.plugintools.IUuidAndName;
 import se.fredsfursten.plugintools.Json;
 import se.fredsfursten.plugintools.Misc;
+import se.fredsfursten.plugintools.PluginConfig;
 
-public class PlayerInfo {
+public class PlayerInfo implements IJson<PlayerInfo>, IUuidAndName  {
 	private static ConfigurableFormat addGroupCommandMessage;
 	private static ConfigurableFormat removeGroupCommandMessage;
 	private static ConfigurableFormat visitBoardMessage;
@@ -29,21 +33,22 @@ public class PlayerInfo {
 	private boolean _isDonatorOnTheBoard;
 	private boolean _hasBeenToBoard;
 
-	static
+	static void initialize(JavaPlugin plugin)
 	{
-		addGroupCommandMessage = new ConfigurableFormat("AddGroupCommand", 2,
+		PluginConfig config = PluginConfig.get(plugin);
+		addGroupCommandMessage = new ConfigurableFormat(config, "AddGroupCommand", 2,
 				"perm player %s addgroup PerkLevel%d");
-		removeGroupCommandMessage = new ConfigurableFormat("RemoveGroupCommand", 2,
+		removeGroupCommandMessage = new ConfigurableFormat(config, "RemoveGroupCommand", 2,
 				"perm player %s removegroup PerkLevel%d");
-		visitBoardMessage = new ConfigurableFormat("VisitBoardMessage", 1,
+		visitBoardMessage = new ConfigurableFormat(config, "VisitBoardMessage", 1,
 				"If you visit the donationboard, you can raise your perk level to %d.");
-		levelRaisedMessage = new ConfigurableFormat("PerkLevelRaisedMessage", 1,
+		levelRaisedMessage = new ConfigurableFormat(config, "PerkLevelRaisedMessage", 1,
 				"Your perk level has been raised to %d.");
-		levelLoweredMessage = new ConfigurableFormat("PerkLevelLoweredMessage", 1,
+		levelLoweredMessage = new ConfigurableFormat(config, "PerkLevelLoweredMessage", 1,
 				"Your perk level has been lowered to %d.");
-		noTokensLeftMessage = new ConfigurableFormat("NoTokensLeftMessage", 0,
+		noTokensLeftMessage = new ConfigurableFormat(config, "NoTokensLeftMessage", 0,
 				"You have no E-tokens left.");
-		tokensLeftMessage = new ConfigurableFormat("TokensLeftMessage", 1,
+		tokensLeftMessage = new ConfigurableFormat(config, "TokensLeftMessage", 1,
 				"You have %d remaining E-tokens.");
 	}
 
@@ -81,6 +86,9 @@ public class PlayerInfo {
 		this._hasBeenToBoard = false;
 	}
 
+	PlayerInfo() {
+	}
+
 	@SuppressWarnings("unchecked")
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
@@ -90,17 +98,6 @@ public class PlayerInfo {
 		json.put("totalMoneyDonated", this._totalMoneyDonated);
 		return json;
 	}
-
-	public static PlayerInfo fromJson(JSONObject json)
-	{
-		return new PlayerInfo(
-				Json.toPlayerId((JSONObject) json.get("player")),
-				Json.toPlayerName((JSONObject) json.get("player")),
-				(int) json.get("remainingDonationTokens"),
-				(long) json.get("totalTokensDonated"),
-				(double) json.get("totalMoneyDonated"));
-	}
-
 
 	public int getRemainingDonationTokens() {
 		return this._remainingDonationTokens;
@@ -243,5 +240,20 @@ public class PlayerInfo {
 	public String toString()
 	{
 		return String.format("%s (%d tokens): perklevel %d", this.getName(), this._remainingDonationTokens, this._perkLevel);
+	}
+
+	@Override
+	public PlayerInfo factory() {
+		return new PlayerInfo();
+	}
+
+	@Override
+	public void fromJson(Object json) {
+		JSONObject jsonObject = (JSONObject) json;
+		this._id = Json.toPlayerId((JSONObject) jsonObject.get("player"));
+		this._name = Json.toPlayerName((JSONObject) jsonObject.get("player"));
+		this._remainingDonationTokens = (int) jsonObject.get("remainingDonationTokens");
+		this._totalTokensDonated = (long) jsonObject.get("totalTokensDonated");
+		this._totalMoneyDonated = (double) jsonObject.get("totalMoneyDonated");
 	}
 }

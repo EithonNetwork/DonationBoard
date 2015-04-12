@@ -78,7 +78,7 @@ class BoardStorageModel implements Serializable {
 
 	public PlayerCollection<PlayerInfo> getKnownPlayers()
 	{
-		PlayerCollection<PlayerInfo> knownPlayers = new PlayerCollection<PlayerInfo>();
+		PlayerCollection<PlayerInfo> knownPlayers = new PlayerCollection<PlayerInfo>(new PlayerInfo());
 		if (this.donators == null) return knownPlayers;
 		for (PlayerStorageModel storageModel : this.donators) {
 			knownPlayers.put(storageModel.getUniqueId(), 
