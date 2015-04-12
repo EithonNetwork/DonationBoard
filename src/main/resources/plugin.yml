@@ -1,6 +1,6 @@
 name: DonationBoardPlugin
 main: se.fredsfursten.donationboardplugin.DonationBoardPlugin
-version: 1.4
+version: 2.0
 author: vanbrayne
 description: A Minecraft plugin for keeping scores of donations on a donation board
 depend: [EithonLibraryPlugin]

@@ -4,9 +4,10 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Rails;
+import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Json;
 import se.fredsfursten.plugintools.Misc;
 
 public class PlayerInfo {
@@ -67,6 +68,39 @@ public class PlayerInfo {
 		this._perkLevel = 0;
 		this._hasBeenToBoard = false;
 	}
+
+	public PlayerInfo(UUID uniqueId, String name, int remainingDonationTokens, long totalTokensDonated, double totalAmountDonated)
+	{
+		this._player = null;
+		this._name = name;
+		this._id = uniqueId;
+		this._remainingDonationTokens = remainingDonationTokens;
+		this._totalTokensDonated = totalTokensDonated;
+		this._totalMoneyDonated = totalAmountDonated;
+		this._perkLevel = 0;
+		this._hasBeenToBoard = false;
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("player", Json.fromPlayer(this._id, this._name));
+		json.put("remainingDonationTokens", this._remainingDonationTokens);
+		json.put("totalTokensDonated", this._totalTokensDonated);
+		json.put("totalMoneyDonated", this._totalMoneyDonated);
+		return json;
+	}
+
+	public static PlayerInfo fromJson(JSONObject json)
+	{
+		return new PlayerInfo(
+				Json.toPlayerId((JSONObject) json.get("player")),
+				Json.toPlayerName((JSONObject) json.get("player")),
+				(int) json.get("remainingDonationTokens"),
+				(long) json.get("totalTokensDonated"),
+				(double) json.get("totalMoneyDonated"));
+	}
+
 
 	public int getRemainingDonationTokens() {
 		return this._remainingDonationTokens;

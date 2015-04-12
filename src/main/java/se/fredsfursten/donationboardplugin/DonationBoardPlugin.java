@@ -8,7 +8,6 @@ import java.time.LocalTime;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,24 +18,17 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
-import se.fredsfursten.plugintools.ConfigurableFormat;
 import se.fredsfursten.plugintools.PluginConfig;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 
 	private static File donationsStorageFile;
-	private static PluginConfig configuration;
 	private static String mandatoryWorld;
 
 	@Override
 	public void onEnable() {
-		if (configuration == null) {
-			configuration = new PluginConfig(this, "config.yml");
-		} else {
-			configuration.load();
-		}
-		ConfigurableFormat.enable(getPluginConfig());
-		mandatoryWorld = DonationBoardPlugin.getPluginConfig().getString("MandatoryWorld");
+		PluginConfig.enable(this);
+		mandatoryWorld = PluginConfig.get().getString("MandatoryWorld", "");
 		donationsStorageFile = new File(getDataFolder(), "donations.bin");
 		getServer().getPluginManager().registerEvents(this, this);		
 		BoardController.get().enable(this);
@@ -75,11 +67,6 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	public static File getDonationsStorageFile()
 	{
 		return donationsStorageFile;
-	}
-
-	public static FileConfiguration getPluginConfig()
-	{
-		return configuration.getFileConfiguration();
 	}
 
 	@EventHandler

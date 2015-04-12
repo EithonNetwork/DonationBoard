@@ -30,6 +30,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/Lars/workspace/bukkit-1.8-R0.1-SNAPSHOT.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/EithonLibraryPlugin"/>
-	<classpathentry kind="lib" path="C:/Users/Lars/workspace/EithonLibraryPlugin.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Lars/workspace/EithonLibraryPlugin.jar" sourcepath="/EithonLibraryPlugin"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

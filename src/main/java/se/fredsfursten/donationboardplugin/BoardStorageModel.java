@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 
 import se.fredsfursten.plugintools.PlayerCollection;
 
+@Deprecated
 class BoardStorageModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private UUID worldId;

@@ -17,8 +17,6 @@ public class Commands {
 	private static final String GOTO_COMMAND = "/donationboard goto";
 	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens>";
 
-	private JavaPlugin _plugin = null;
-
 	private Commands() {
 	}
 
@@ -31,7 +29,6 @@ public class Commands {
 	}
 
 	void enable(JavaPlugin plugin){
-		this._plugin = plugin;
 	}
 
 	void disable() {

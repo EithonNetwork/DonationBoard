@@ -5,6 +5,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
+import org.json.simple.JSONObject;
+
+import se.fredsfursten.plugintools.Json;
 
 class BoardView {
 	private Block _startBlock;
@@ -132,5 +135,19 @@ class BoardView {
 	public Location getLocation() {
 		if (this._startBlock == null) return null;
 		return this._startBlock.getLocation();
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("world", Json.fromWorld(this.getWorld()));
+		json.put("startBlock", Json.fromBlock(getBlock(1, 1), true));
+		json.put("stepX", this._stepX);
+		json.put("stepZ", this._stepZ);
+		return json;
+	}
+
+	public static BoardView fromJson(JSONObject json) {
+		return new BoardView(Json.toBlock(json, null));
 	}
 }

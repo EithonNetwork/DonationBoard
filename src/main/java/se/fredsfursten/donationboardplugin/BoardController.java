@@ -2,7 +2,6 @@ package se.fredsfursten.donationboardplugin;
 
 import java.io.File;
 import java.time.LocalDateTime;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -10,10 +9,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
 import se.fredsfursten.plugintools.ConfigurableFormat;
+import se.fredsfursten.plugintools.Json;
+import se.fredsfursten.plugintools.Misc;
 import se.fredsfursten.plugintools.PlayerCollection;
+import se.fredsfursten.plugintools.PluginConfig;
 import se.fredsfursten.plugintools.SavingAndLoadingBinary;
 
 public class BoardController {
@@ -46,9 +50,9 @@ public class BoardController {
 
 	void enable(JavaPlugin plugin){
 		this._plugin = plugin;
-		numberOfDays = DonationBoardPlugin.getPluginConfig().getInt("Days");
-		numberOfLevels = DonationBoardPlugin.getPluginConfig().getInt("Levels");
-		perkClaimAfterSeconds = DonationBoardPlugin.getPluginConfig().getInt("PerkClaimAfterSeconds");
+		numberOfDays = PluginConfig.get().getInt("Days", 31);
+		numberOfLevels = PluginConfig.get().getInt("Levels", 5);
+		perkClaimAfterSeconds = PluginConfig.get().getInt("PerkClaimAfterSeconds", 10);
 		needTokensMessage = new ConfigurableFormat("NeedTokensMessage", 0,
 				"You must have E-tokens to raise the perk level.");
 		howToGetTokensMessage = new ConfigurableFormat("HowToGetTokens", 0,
@@ -105,17 +109,52 @@ public class BoardController {
 		delayedRefresh();
 	}
 
+	@SuppressWarnings("unchecked")
 	public void saveNow()
 	{
 		if (this._view == null) return;
-		File file = DonationBoardPlugin.getDonationsStorageFile();
-		BoardStorageModel storageModel = new BoardStorageModel(this._view, this._model, this._knownPlayers);
-		try {
-			SavingAndLoadingBinary.save(storageModel, file);
-		} catch (Exception e) {
-			e.printStackTrace();
+		File jsonFile = new File(this._plugin.getDataFolder(), "donations.json");
+		JSONObject payload = new JSONObject();
+		payload.put("view", this._view.toJson());
+		payload.put("players", knownPlayersToJson());
+
+		JSONObject json = Json.fromBody("donationBoard", 1, payload);
+
+		Json.save(jsonFile, json);
+
+		File binFile = DonationBoardPlugin.getDonationsStorageFile();
+		if(binFile.exists()) {
+			// Verify that we can load the json file
+			JSONObject data = Json.load(jsonFile);
+			if (data == null) {
+				Misc.warning("Can't read the json file \"%s\", so we don't dare to remove the bin file \"%s\".",
+						jsonFile.getName(), binFile.getName());
+				return;
+			}
+			try { binFile.delete(); } catch (Exception ex) {}
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	private JSONArray knownPlayersToJson() {
+		JSONArray json = new JSONArray();
+		for (PlayerInfo playerInfo : this._knownPlayers) {
+			if (playerInfo.getRemainingDonationTokens() > 0) {
+				json.add(playerInfo.toJson());
+			}
+		}
+		return json;
+	}
+
+	private PlayerCollection<PlayerInfo> knownPlayersFromJson(JSONArray json) {
+		PlayerCollection<PlayerInfo> players = new PlayerCollection<PlayerInfo>();
+		for (Object object : json) {
+			PlayerInfo info = PlayerInfo.fromJson((JSONObject) object);
+			players.put(info.getUniqueId(), info);
+		}
+		return players;
+	}
+
 
 	private void delayedLoad() {
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
@@ -129,7 +168,9 @@ public class BoardController {
 	public void loadNow()
 	{
 		File file = DonationBoardPlugin.getDonationsStorageFile();
-		if(!file.exists()) return;
+		if(!file.exists()) {
+			loadJson();
+		}
 		BoardStorageModel storageModel;
 		try {
 			storageModel = SavingAndLoadingBinary.load(file);
@@ -149,6 +190,22 @@ public class BoardController {
 		delayedRefresh();
 	}
 
+	private void loadJson() {
+		File file = new File(this._plugin.getDataFolder(), "donations.json");
+		JSONObject data = Json.load(file);
+		if (data == null) {
+			Misc.debugInfo("The file was empty.");
+			return;			
+		}
+		JSONObject payload = (JSONObject)Json.toBodyPayload(data);
+		if (payload == null) {
+			Misc.warning("The donation board payload was empty.");
+			return;
+		}
+		this._view = BoardView.fromJson((JSONObject)payload.get("view"));
+		this._knownPlayers = knownPlayersFromJson((JSONArray)payload.get("players"));
+	}
+	
 	private void FindDonators() {
 		for (PlayerInfo playerInfo : this._knownPlayers) {
 			playerInfo.setIsDonatorOnTheBoard(false);
@@ -325,7 +382,7 @@ public class BoardController {
 
 	public void stats(CommandSender sender, PlayerInfo playerInfo)
 	{
-		sender.sendMessage(String.format("%s has %d E-tokens, of %d (%.2f€) in total.", 
+		sender.sendMessage(String.format("%s has %d E-tokens, of %d (%.2fï¿½) in total.", 
 				playerInfo.getName(),
 				playerInfo.getRemainingDonationTokens(),
 				playerInfo.getTotalTokensDonated(),
