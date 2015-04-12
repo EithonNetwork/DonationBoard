@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import se.fredsfursten.plugintools.AlarmTrigger;
+import se.fredsfursten.plugintools.Misc;
 import se.fredsfursten.plugintools.PluginConfig;
 
 public final class DonationBoardPlugin extends JavaPlugin implements Listener {
@@ -26,11 +27,12 @@ public final class DonationBoardPlugin extends JavaPlugin implements Listener {
 	private static String mandatoryWorld;
 
 	@Override
-	public void onEnable() {
-		PluginConfig.enable(this);
-		mandatoryWorld = PluginConfig.get().getString("MandatoryWorld", "");
+	public void onEnable() {	
+		Misc.enable(this);
+		PluginConfig config = PluginConfig.get(this);
+		mandatoryWorld = config.getString("MandatoryWorld", "");
 		donationsStorageFile = new File(getDataFolder(), "donations.bin");
-		getServer().getPluginManager().registerEvents(this, this);		
+		getServer().getPluginManager().registerEvents(this, this);
 		BoardController.get().enable(this);
 		Commands.get().enable(this);
 		AlarmTrigger.get().enable(this);

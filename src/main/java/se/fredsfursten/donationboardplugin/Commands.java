@@ -15,7 +15,7 @@ public class Commands {
 	private static final String SAVE_COMMAND = "/donationboard save";
 	private static final String REGISTER_COMMAND = "/donationboard register <player>";
 	private static final String GOTO_COMMAND = "/donationboard goto";
-	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens>";
+	private static final String DONATE_COMMAND = "/donationboard donate <player> <E-tokens> <amount>";
 
 	private Commands() {
 	}
@@ -143,7 +143,7 @@ public class Commands {
 		}
 
 		double amount = 0.0;
-		if (args.length > 2) {
+		if (args.length > 3) {
 			try {
 				amount = Double.parseDouble(args[3]);
 			} catch (Exception e) {
